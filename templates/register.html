@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+  <h2>Register a Club</h2>
+  <form method="post">
+    <label>Club Name</label>
+    <input type="text" name="name" required>
+    <label>Contact Email</label>
+    <input type="email" name="email" required>
+    <label>Password</label>
+    <input type="password" name="password" required>
+    <button type="submit">Register</button>
+  </form>
+  <p>Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+{% endblock %}

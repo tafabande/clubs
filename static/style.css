@@ -1,0 +1,48 @@
+* { box-sizing: border-box; }
+body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background: #f3f6fa; color: #222; }
+header { background: #2c3e50; color: #fff; padding: 18px 28px; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.06) }
+header h1 { margin: 0; font-size: 22px; letter-spacing: 0.2px }
+nav a { color: #ecf0f1; margin-left: 14px; text-decoration: none }
+main { padding: 28px; max-width: 1100px; margin: 28px auto; background: #ffffff; border-radius: 12px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); line-height:1.45 }
+
+/* Controls and spacing */
+.controls { display:flex; gap:12px; align-items:center; margin-bottom:18px }
+#searchInput { flex: 1 1 360px; padding:10px 12px; border-radius:8px; border:1px solid #e3e7ee; background:#fbfdff }
+#categoryFilter { padding:10px 12px; border-radius:8px; border:1px solid #e3e7ee; background:#fff }
+
+/* Clubs list grid */
+#clubsList, .clubs-list { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:18px }
+.club-card { background:#ffffff; padding:18px; border-radius:10px; border:1px solid rgba(16,24,40,0.04); box-shadow: 0 4px 12px rgba(16,24,40,0.04); display:flex; flex-direction:column; gap:8px; transition:transform .12s ease, box-shadow .12s ease }
+.club-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(16,24,40,0.08) }
+.club-card h3 { margin:0; font-size:18px }
+.muted { color:#6b7280; margin:0; font-size:13px }
+.small { color:#374151; font-size:13px; margin:0 }
+
+form { display:flex; flex-direction:column; gap:10px }
+label { font-weight:600 }
+input { padding:10px; border:1px solid #e3e7ee; border-radius:8px }
+button { padding:10px 14px; background:#2c3e50; color:#fff; border: none; border-radius:8px; cursor:pointer }
+.flashes { list-style:none; padding:0; margin:0 0 14px 0 }
+.flashes li { background:#fff4db; padding:10px; border-radius:8px; color:#663c00 }
+footer { text-align:center; padding:16px 0; color:#6b7280 }
+
+/* Responsive adjustments */
+@media (max-width: 720px) {
+	header { padding: 14px 16px }
+	main { padding: 18px; margin: 18px 12px }
+	.controls { flex-direction:column; align-items:stretch }
+	#searchInput { width:100% }
+}
+
+/* Modal styles for club detail */
+.modal { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(5,10,15,0.35); opacity:0; pointer-events:none; transition:opacity .18s ease }
+.modal.open { opacity:1; pointer-events:auto }
+.modal-panel { background:#fff; border-radius:12px; padding:20px; width:min(1000px,94%); max-height:86vh; overflow:auto; box-shadow:0 20px 60px rgba(2,6,23,0.2) }
+.modal-close { position:absolute; right:18px; top:14px; background:transparent; border:none; font-size:24px; cursor:pointer }
+.charts { display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px }
+.chart-card { padding:8px; border-radius:8px; background:#fbfdff; border:1px solid #eef2ff }
+.stats-row { display:flex; gap:16px; margin-top:14px }
+.stat { background:#f8fafc; padding:12px; border-radius:8px; flex:1; text-align:center }
+.stat-val { font-size:20px; margin-top:6px; font-weight:700 }
+
+@media (max-width:720px){ .charts{ grid-template-columns:1fr; } .stats-row{ flex-direction:column } }

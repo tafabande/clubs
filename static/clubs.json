@@ -1,0 +1,12 @@
+[
+  { "name": "Robotics Club", "email": "robotics@msu.edu", "description": "Build and program robots for competitions and learning.", "category": "Engineering", "website": "" },
+  { "name": "Chess Club", "email": "chess@msu.edu", "description": "Weekly chess meetups, tournaments, and lessons.", "category": "Games", "website": "" },
+  { "name": "Environmental Alliance", "email": "enviro@msu.edu", "description": "Advocacy and volunteer projects for sustainability.", "category": "Environmental", "website": "" },
+  { "name": "Dance Society", "email": "dance@msu.edu", "description": "Multi-style dance classes and performances.", "category": "Arts", "website": "" },
+  { "name": "Photography Club", "email": "photo@msu.edu", "description": "Photo walks, workshops, and exhibitions.", "category": "Arts", "website": "" },
+  { "name": "Debate Team", "email": "debate@msu.edu", "description": "Competitive debating and public speaking training.", "category": "Academic", "website": "" },
+  { "name": "Astronomy Club", "email": "astro@msu.edu", "description": "Stargazing nights and astronomy talks.", "category": "Science", "website": "" },
+  { "name": "Programming Guild", "email": "code@msu.edu", "description": "Study groups, hackathons, and coding workshops.", "category": "Technology", "website": "" },
+  { "name": "AI & ML Club", "email": "ai@msu.edu", "description": "Explore artificial intelligence and machine learning projects.", "category": "Technology", "website": "" },
+  { "name": "Music Ensemble", "email": "music@msu.edu", "description": "Instrumental and vocal groups for campus performances.", "category": "Arts", "website": "" }
+]

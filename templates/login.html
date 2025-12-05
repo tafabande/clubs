@@ -1,13 +1,48 @@
-{% extends 'layout.html' %}
-{% block title %}Login{% endblock %}
-{% block content %}
-  <h2>Login</h2>
-  <form method="post">
-    <label>Email</label>
-    <input type="email" name="email" required>
-    <label>Password</label>
-    <input type="password" name="password" required>
-    <button type="submit">Log in</button>
-  </form>
-  <p>Don't have an account? <a href="{{ url_for('register') }}">Register a club</a></p>
-{% endblock %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login — Clubs</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Campus Clubs</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="socials.html">Socials</a>
+      </nav>
+    </header>
+
+    <main>
+      <section style="max-width:520px;margin:28px auto;padding:18px">
+        <h2>Club Login</h2>
+        <form id="loginForm" action="#" method="post" novalidate>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="club@campus.edu" required />
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" required />
+
+          <button type="submit">Login</button>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Campus Clubs</p>
+    </footer>
+
+    <script>
+      // Simple mock login: save email to localStorage and redirect
+      document.getElementById('loginForm').addEventListener('submit', function(e){
+        e.preventDefault(); const email = document.getElementById('email').value.trim();
+        if(!email){ alert('Please enter your email'); return }
+        localStorage.setItem('msu_user', JSON.stringify({email: email, logged: true}));
+        alert('Logged in as ' + email);
+        location.href = 'index.html';
+      });
+    </script>
+  </body>
+</html>

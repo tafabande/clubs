@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MSU Zimbabwe — Socials</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>MSU Zimbabwe — Campus Socials</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="socials.html">Socials</a>
+        <a href="login.html">Login</a>
+      </nav>
+    </header>
+
+    <main>
+      <section style="max-width:900px;margin:28px auto;padding:18px">
+        <div class="socials-header">
+          <h2>Campus Feed</h2>
+          <p class="muted">Recent posts from MSU Zimbabwe clubs — engagement trips, seminars, hackathons and more.</p>
+        </div>
+
+        <div id="feed" class="feed" aria-live="polite">Loading feed…</div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 MSU Zimbabwe — Campus Clubs</p>
+    </footer>
+
+    <script>
+      // Fetch and render static socials feed from ../static/socials.json
+      function timeAgo(iso){
+        const d=new Date(iso); const s=Math.floor((Date.now()-d)/1000);
+        if(s<60) return s+ 's'; if(s<3600) return Math.floor(s/60)+'m'; if(s<86400) return Math.floor(s/3600)+'h';
+        return Math.floor(s/86400)+'d';
+      }
+
+      function renderPost(p){
+        const el=document.createElement('article'); el.className='post';
+        <script src="../static/socials.js"></script>
+  </body>
+</html>

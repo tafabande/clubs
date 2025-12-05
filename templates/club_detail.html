@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Club — Details</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Campus Clubs</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+      </nav>
+    </header>
+
+    <main>
+      <section style="max-width:900px; margin:28px auto; padding:18px">
+        <a href="javascript:history.back()" class="btn-outline">← Back</a>
+        <h2 id="clubName">Club name</h2>
+        <p class="muted">Category: <span id="clubCategory">—</span></p>
+        <p id="clubDescription" class="lead">Loading description…</p>
+        <p id="clubWebsite"></p>
+
+        <div class="card-actions">
+          <button class="btn btn-details" id="joinBtn">Join</button>
+          <button class="btn btn-view" id="exitBtn">Exit</button>
+        </div>
+
+        <h3 style="margin-top:22px">History</h3>
+        <div id="historyBlock">Loading…</div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Campus Clubs</p>
+    </footer>
+
+    <script>
+      // Load club by ?id= numeric query param and populate page from static file
+      function qs(key){ const params = new URLSearchParams(location.search); return params.get(key); }
+      const clubId = parseInt(qs('id')||'0',10);
+      function getJoined(){ return new Set(JSON.parse(localStorage.getItem('joinedClubs')||'[]')); }
+      function saveJoined(set){ localStorage.setItem('joinedClubs', JSON.stringify([...set])); }
+      function syncButtons(){ const j=getJoined(); document.getElementById('joinBtn').disabled = j.has(clubId); document.getElementById('exitBtn').disabled = !j.has(clubId); }
+
+      fetch('../static/clubs.json').then(r=>r.json()).then(list=>{
+        const club = list.find(c=>Number(c.id) === clubId) || list[0] || {};
+        document.getElementById('clubName').textContent = club.name || 'Unknown Club';
+        document.getElementById('clubCategory').textContent = club.category || 'Uncategorized';
+        document.getElementById('clubDescription').textContent = club.description || '';
+        if(club.website){
+          const a = document.createElement('a'); a.href = club.website; a.target = '_blank'; a.rel='noopener'; a.textContent = 'Visit website';
+          document.getElementById('clubWebsite').appendChild(a);
+        }
+        // history: if club.history exists (array), render it
+        if(Array.isArray(club.history) && club.history.length){
+          const t = document.createElement('table'); t.style.width='100%'; t.style.borderCollapse='collapse';
+          t.innerHTML = `<thead><tr><th style='text-align:left'>Date</th><th style='text-align:center'>Members</th><th style='text-align:center'>Events</th></tr></thead>`;
+          const tb = document.createElement('tbody');
+          club.history.forEach(r=>{ const tr = document.createElement('tr'); tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString()}</td><td style='text-align:center'>${r.members}</td><td style='text-align:center'>${r.events}</td>`; tb.appendChild(tr); });
+          t.appendChild(tb); document.getElementById('historyBlock').innerHTML=''; document.getElementById('historyBlock').appendChild(t);
+        } else {
+          document.getElementById('historyBlock').textContent = 'No history available.';
+        }
+      }).catch(()=>{ document.getElementById('clubDescription').textContent = 'Failed to load club details.' });
+
+      document.getElementById('joinBtn').addEventListener('click', ()=>{ const j=getJoined(); j.add(clubId); saveJoined(j); syncButtons(); alert('Joined club!'); });
+      document.getElementById('exitBtn').addEventListener('click', ()=>{ const j=getJoined(); j.delete(clubId); saveJoined(j); syncButtons(); alert('Exited club.'); });
+      syncButtons();
+    </script>
+  </body>
+</html>

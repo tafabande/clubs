@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clubs — Dashboard (Plain)</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header>
+    <h1>Campus Clubs</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="register.html">Register Club</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Clubs Dashboard</h2>
+    <div class="controls">
+      <input id="searchInput" type="search" placeholder="Search clubs by name, category, or description…" />
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div>Clubs</div><div id="statClubs" class="stat-val">—</div></div>
+      <div class="stat"><div>Categories</div><div id="statCats" class="stat-val">—</div></div>
+      <div class="stat"><div>Joined</div><div id="statJoined" class="stat-val">0</div></div>
+    </div>
+
+    <div id="clubsList" class="clubs-list" aria-live="polite"></div>
+
+    <div id="clubModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal-panel">
+        <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Campus Clubs</p>
+  </footer>
+
+  <script>window.SESSION_CLUB_ID = null;</script>
+  <script src="../clubs.js"></script>
+  <script src="../dashboard.js"></script>
+  <script>
+    // In plain mode, intercept "View" links like /clubs/<id> and route to club.html?id=<id>
+    (function(){
+      var list = document.getElementById('clubsList');
+      if(!list) return;
+      list.addEventListener('click', function(e){
+        var a = e.target.closest('a');
+        if(!a) return;
+        var href = a.getAttribute('href')||'';
+        var m = /^\/clubs\/(\d+)/.exec(href);
+        if(m){
+          e.preventDefault();
+          window.location.href = 'club.html?id=' + m[1];
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

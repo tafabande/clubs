@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from sqlmodel import select, Session, create_engine
-from models import Club
+from models import Club, ClubHistory
 from datetime import datetime
 
 DB_URL = 'sqlite:///clubs.db'
@@ -24,9 +24,8 @@ def login_required(f):
 
 @app.route('/')
 def index():
-    if 'club_id' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    # Show a landing page with links to the main areas
+    return render_template('index.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -74,10 +73,15 @@ def login():
 
 
 @app.route('/dashboard')
-@login_required
 def dashboard():
-    # Dashboard is mostly static front-end; session available for server-side features
+    # Dashboard is now public; session available for authenticated features later
     return render_template('dashboard.html')
+
+
+# Convenience route to the plain (no templating) static UI
+@app.route('/plain')
+def plain_home():
+    return redirect(url_for('static', filename='plain/index.html'))
 
 
 @app.route('/logout')
@@ -127,6 +131,15 @@ def api_club_history(club_id: int):
         rows = db.exec(select(ClubHistory).where(ClubHistory.club_id == club_id).order_by(ClubHistory.date)).all()
         data = [{'date': r.date.isoformat(), 'members': r.members, 'events': r.events} for r in rows]
         return jsonify(data)
+
+
+@app.route('/clubs/<int:club_id>')
+def club_page(club_id: int):
+    with Session(engine) as db:
+        c = db.get(Club, club_id)
+        if not c:
+            return "Club not found", 404
+        return render_template('club_detail.html', club=c)
 
 
 if __name__ == '__main__':

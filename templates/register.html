@@ -1,15 +1,60 @@
-{% extends 'layout.html' %}
-{% block title %}Register{% endblock %}
-{% block content %}
-  <h2>Register a Club</h2>
-  <form method="post">
-    <label>Club Name</label>
-    <input type="text" name="name" required>
-    <label>Contact Email</label>
-    <input type="email" name="email" required>
-    <label>Password</label>
-    <input type="password" name="password" required>
-    <button type="submit">Register</button>
-  </form>
-  <p>Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
-{% endblock %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Register Club — Clubs</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Campus Clubs</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="socials.html">Socials</a>
+      </nav>
+    </header>
+
+    <main>
+      <section style="max-width:640px;margin:28px auto;padding:18px">
+        <h2>Register a New Club</h2>
+        <form id="registerForm" action="#" method="post" novalidate>
+          <label for="name">Club Name</label>
+          <input id="name" name="name" type="text" placeholder="e.g., Robotics Club" required />
+
+          <label for="email">Contact Email</label>
+          <input id="email" name="email" type="email" placeholder="club@campus.edu" required />
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Create a password" required />
+
+          <label for="category">Category</label>
+          <input id="category" name="category" type="text" placeholder="e.g., Engineering" />
+
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Short summary of the club"></textarea>
+
+          <button type="submit">Register Club</button>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Campus Clubs</p>
+    </footer>
+
+    <script>
+      // Mock register: store club info in localStorage and redirect to dashboard
+      document.getElementById('registerForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const name = document.getElementById('name').value.trim();
+        if(!name){ alert('Please provide a club name'); return }
+        const clubs = JSON.parse(localStorage.getItem('msu_registered_clubs')||'[]');
+        clubs.push({id: Date.now(), name: name, email: document.getElementById('email').value, category: document.getElementById('category').value, description: document.getElementById('description').value});
+        localStorage.setItem('msu_registered_clubs', JSON.stringify(clubs));
+        alert('Club registered: ' + name);
+        location.href = 'dashboard.html';
+      });
+    </script>
+  </body>
+</html>

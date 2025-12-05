@@ -1,0 +1,71 @@
+[
+  {
+    "id": 1,
+    "club": "MSU Enviro Club",
+    "avatar": "🌿",
+    "time": "2025-11-20T09:30:00Z",
+    "type": "Engagement Trip",
+    "location": "Harare Botanical Gardens, Harare",
+    "content": "We visited communities around Harare to plant indigenous trees and run eco-awareness workshops for local schools. Big thanks to volunteers and partners — #MSUEnviro #GreenZimbabwe",
+    "likes": 42,
+    "comments": [
+      {"author":"Tendai","text":"Great initiative!"},
+      {"author":"Panashe","text":"Proud of the team."}
+    ]
+  },
+  {
+    "id": 2,
+    "club": "MSU Robotics Club",
+    "avatar": "🤖",
+    "time": "2025-10-12T14:00:00Z",
+    "type": "Hackathon",
+    "location": "MSU Technopark, Harare",
+    "content": "Our students hosted the annual MSU Hack-A-Thon where teams developed drones for precision agriculture. Congratulations to winners from the Faculty of Engineering!",
+    "likes": 128,
+    "comments": [{"author":"Sponsor","text":"Excellent turnout."}]
+  },
+  {
+    "id": 3,
+    "club": "MSU Debate Society",
+    "avatar": "🗣️",
+    "time": "2025-09-05T17:45:00Z",
+    "type": "Seminar",
+    "location": "MSU Main Auditorium, Harare",
+    "content": "Hosted a public seminar on civic engagement and youth leadership in Zimbabwe. Panels included local MPs and civil society leaders.",
+    "likes": 36,
+    "comments": []
+  },
+  {
+    "id": 4,
+    "club": "MSU Community Outreach",
+    "avatar": "🤝",
+    "time": "2025-08-18T08:00:00Z",
+    "type": "Engagement Trip",
+    "location": "Gweru Outreach, Midlands",
+    "content": "A three-day engagement where students ran health clinics and digital literacy sessions for rural communities in Midlands province.",
+    "likes": 74,
+    "comments": [{"author":"Chipo","text":"Meaningful experience."}]
+  },
+  {
+    "id": 5,
+    "club": "MSU Art & Culture",
+    "avatar": "🎨",
+    "time": "2025-07-02T11:00:00Z",
+    "type": "Exhibition",
+    "location": "MSU Gallery, Bulawayo",
+    "content": "Showcased student artwork inspired by Zimbabwean heritage and resilience. Visitors from across Bulawayo attended.",
+    "likes": 55,
+    "comments": [{"author":"Visitor","text":"Beautiful work."}]
+  },
+  {
+    "id": 6,
+    "club": "MSU Computer Science Society",
+    "avatar": "🖥️",
+    "time": "2025-11-28T10:15:00Z",
+    "type": "Workshop",
+    "location": "MSU Labs, Harare",
+    "content": "A hands-on workshop on machine learning for agriculture — practical sessions on building predictive models using local datasets.",
+    "likes": 89,
+    "comments": [{"author":"Lecturer","text":"Fantastic turnout and engagement."}]
+  }
+]

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Club — (Plain)</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header>
+    <h1>Campus Clubs</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="register.html" aria-current="page">Register Club</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Register a New Club</h2>
+    <form novalidate>
+      <label for="name">Club Name</label>
+      <input id="name" name="name" type="text" placeholder="e.g., Robotics Club" required />
+
+      <label for="email">Contact Email</label>
+      <input id="email" name="email" type="email" placeholder="club@campus.edu" required />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="Create a password" required />
+
+      <label for="category">Category</label>
+      <input id="category" name="category" type="text" placeholder="e.g., Engineering" />
+
+      <label for="description">Description</label>
+      <input id="description" name="description" type="text" placeholder="Short summary of the club" />
+
+      <button type="button" onclick="alert('This is a plain static page. Use /register in the Flask app to actually register.')">Register Club</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>© 2025 Campus Clubs</p>
+  </footer>
+</body>
+</html>

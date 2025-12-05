@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club — Details (Plain)</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <header>
+    <h1>Campus Clubs</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="register.html">Register Club</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2 id="clubName">Club</h2>
+    <p class="muted" id="clubMeta">Loading…</p>
+    <p id="clubDesc"></p>
+
+    <div class="card-actions">
+      <button class="btn btn-details" id="joinBtn">Join</button>
+      <button class="btn btn-view" id="exitBtn">Exit</button>
+    </div>
+
+    <h3>History</h3>
+    <div id="historyBlock">Loading…</div>
+  </main>
+
+  <footer>
+    <p>© 2025 Campus Clubs</p>
+  </footer>
+
+  <script>
+    function getParam(name){
+      var m = new URLSearchParams(window.location.search).get(name);
+      return m ? decodeURIComponent(m) : null;
+    }
+    var clubId = Number(getParam('id'));
+
+    function getJoined(){ try{return new Set(JSON.parse(localStorage.getItem('joinedClubs')||'[]'));}catch{return new Set();} }
+    function saveJoined(set){ localStorage.setItem('joinedClubs', JSON.stringify(Array.from(set))); }
+    function syncButtons(){
+      var j = getJoined();
+      document.getElementById('joinBtn').disabled = j.has(clubId);
+      document.getElementById('exitBtn').disabled = !j.has(clubId);
+    }
+
+    document.getElementById('joinBtn').addEventListener('click', function(){ var j=getJoined(); j.add(clubId); saveJoined(j); syncButtons(); alert('Joined club!'); });
+    document.getElementById('exitBtn').addEventListener('click', function(){ var j=getJoined(); j.delete(clubId); saveJoined(j); syncButtons(); alert('Exited club.'); });
+
+    function renderClub(c){
+      document.getElementById('clubName').textContent = c.name || 'Club';
+      document.getElementById('clubMeta').textContent = 'Category: ' + (c.category||'Uncategorized') + (c.email?(' · '+c.email):'');
+      document.getElementById('clubDesc').textContent = c.description||'';
+    }
+
+    function loadClub(){
+      if(!clubId){ document.getElementById('clubMeta').textContent = 'No club id provided.'; return; }
+      fetch('/api/clubs/' + clubId).then(r=>r.json()).then(data=>{
+        if(data && !data.error){ renderClub(data); }
+      }).catch(function(){ /* ignore */ });
+    }
+
+    function loadHistory(){
+      if(!clubId){ return; }
+      fetch('/api/clubs/' + clubId + '/history')
+        .then(r=>r.json())
+        .then(rows=>{
+          if(!Array.isArray(rows) || rows.length===0){ document.getElementById('historyBlock').textContent = 'No history yet.'; return; }
+          var t = document.createElement('table');
+          t.style.width='100%'; t.style.borderCollapse='collapse';
+          t.innerHTML = "<thead><tr><th style='text-align:left'>Date</th><th>Members</th><th>Events</th></tr></thead>";
+          var tb = document.createElement('tbody');
+          rows.forEach(function(r){
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + new Date(r.date).toLocaleDateString() + '</td>' +
+                           "<td style='text-align:center'>" + r.members + '</td>' +
+                           "<td style='text-align:center'>" + r.events + '</td>';
+            tb.appendChild(tr);
+          });
+          t.appendChild(tb);
+          var blk = document.getElementById('historyBlock');
+          blk.innerHTML = '';
+          blk.appendChild(t);
+        })
+        .catch(function(){ document.getElementById('historyBlock').textContent = 'Failed to load history.'; });
+    }
+
+    loadClub();
+    loadHistory();
+    syncButtons();
+  </script>
+</body>
+</html>

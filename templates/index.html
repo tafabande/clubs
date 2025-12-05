@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Clubs — Home</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Campus Clubs</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="socials.html">Socials</a>
+        <a href="register.html">Register Club</a>
+        <a href="login.html">Login</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-inner">
+          <h2>Discover and manage campus clubs</h2>
+          <p class="lead">Browse clubs, view activities, join or exit clubs, and register new ones.</p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="dashboard.html">Open Dashboard</a>
+            <a class="btn-outline" href="register.html">Register a Club</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-overview">
+        <div class="stat-box">
+          <div class="stat-number" id="statTotalClubs">—</div>
+          <div class="stat-label">Total Clubs</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statMyClubs">0</div>
+          <div class="stat-label">Clubs You Joined</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statCategories">—</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </section>
+
+      <section class="quick-links">
+        <h2>Quick links</h2>
+        <div class="links-grid">
+          <a class="link-card" href="dashboard.html">
+            <div class="link-icon">📊</div>
+            <div class="link-title">Dashboard</div>
+            <div class="link-desc">Overview, search, and club details</div>
+          </a>
+          <a class="link-card" href="register.html">
+            <div class="link-icon">📝</div>
+            <div class="link-title">Register Club</div>
+            <div class="link-desc">Create a new club entry</div>
+          </a>
+          <a class="link-card" href="login.html">
+            <div class="link-icon">🔐</div>
+            <div class="link-title">Login</div>
+            <div class="link-desc">Manage your registered club</div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Campus Clubs</p>
+    </footer>
+
+    <script>
+      // Populate basic stats from the local static clubs list
+      fetch('../static/clubs.json').then(r=>r.json()).then(data=>{
+        document.getElementById('statTotalClubs').textContent = data.length;
+        const cats = new Set(data.map(c=>c.category||'Uncategorized'));
+        document.getElementById('statCategories').textContent = cats.size;
+      }).catch(()=>{
+        document.getElementById('statTotalClubs').textContent = '—';
+        document.getElementById('statCategories').textContent = '—';
+      });
+      const joined = JSON.parse(localStorage.getItem('joinedClubs')||'[]');
+      document.getElementById('statMyClubs').textContent = joined.length;
+
+      // Small helper: update any join buttons on this page (if present)
+      document.addEventListener('click', e => {
+        if(e.target && e.target.matches('.btn-details')){
+          const id = e.target.dataset && e.target.dataset.id ? Number(e.target.dataset.id) : null;
+          if(id){
+            const set = new Set(JSON.parse(localStorage.getItem('joinedClubs')||'[]'));
+            set.add(id);
+            localStorage.setItem('joinedClubs', JSON.stringify([...set]));
+            e.target.textContent = 'Joined'; e.target.disabled = true;
+            document.getElementById('statMyClubs').textContent = JSON.parse(localStorage.getItem('joinedClubs')||'[]').length;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

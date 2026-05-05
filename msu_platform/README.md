@@ -53,7 +53,33 @@ Enterprise-grade Django platform for managing Midlands State University (MSU) Gw
 
 ## 🚀 Quick Start
 
-### Docker (Recommended)
+### One-Tap Launch (Windows - Easiest!) 🌟
+
+**The absolute easiest way to run the platform on Windows:**
+
+```batch
+launch.bat
+```
+
+Just double-click `launch.bat` and it will:
+- ✅ Scan system compatibility
+- ✅ Install all prerequisites automatically
+- ✅ Set up database and migrations
+- ✅ Create admin user (admin@msu.ac.zw / admin123)
+- ✅ Display localhost AND LAN links
+- ✅ Show live status logs
+
+**Perfect for:**
+- First-time users
+- Quick demos
+- Non-technical users
+- LAN/network access
+
+**See [LAUNCH_GUIDE.md](LAUNCH_GUIDE.md) for complete documentation.**
+
+---
+
+### Docker (Recommended for Production)
 
 ```bash
 # Clone the repository

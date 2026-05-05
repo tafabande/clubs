@@ -48,43 +48,88 @@ if "%MENU_CHOICE%"=="6" goto :migrate_data
 if "%MENU_CHOICE%"=="7" exit /b 0
 
 echo Invalid choice.
-timeout /t 2 >nul
+ping -n 3 127.0.0.1 >nul
 goto :master_menu
 
 :start_docker
 echo [INFO] Starting Docker services...
 docker-compose up -d --build
-pause
-exit /b 0
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to start Docker services. Please check if Docker Desktop is running.
+) else (
+    echo [PASS] Docker services started successfully.
+    echo.
+    echo [ACCESS LINKS]
+    echo   Platform: http://localhost:8000
+    echo   Admin:    http://localhost:8000/admin/
+)
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 :run_tests
 echo [INFO] Running test suite...
 if exist "venv\Scripts\activate.bat" call venv\Scripts\activate.bat
 pytest -v
-pause
-exit /b 0
+if %errorlevel% neq 0 (
+    echo [ERROR] One or more tests failed. Review the test logs above.
+) else (
+    echo [PASS] All tests passed successfully!
+)
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 :deploy_platform
 echo [INFO] Deploying platform...
 git pull
-docker-compose up -d --build
-pause
-exit /b 0
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to pull latest code from Git.
+) else (
+    docker-compose up -d --build
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to deploy Docker containers.
+    ) else (
+        echo [PASS] Platform deployed successfully.
+        echo.
+        echo [ACCESS LINKS]
+        echo   Platform: http://localhost:8000
+        echo   Admin:    http://localhost:8000/admin/
+    )
+)
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 :stop_all
 echo [INFO] Stopping all services...
 docker-compose down
-taskkill /IM python.exe /F
-echo [PASS] All services stopped.
-pause
-exit /b 0
+if %errorlevel% neq 0 (
+    echo [WARN] Docker-compose down encountered an issue ^(containers might not be running^).
+)
+taskkill /IM python.exe /F >nul 2>&1
+echo [PASS] All local services stopped.
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 :migrate_data
 echo [INFO] Migrating legacy data...
 if exist "venv\Scripts\activate.bat" call venv\Scripts\activate.bat
 python scripts/migrate_flask_data.py
-pause
-exit /b 0
+if %errorlevel% neq 0 (
+    echo [ERROR] Data migration failed. See error output above.
+) else (
+    echo [PASS] Legacy data migrated successfully.
+)
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 :launch_server
 echo.
@@ -134,7 +179,7 @@ if "%ENV_CHOICE%"=="1" (
 )
 echo --------------------------------------------------------------------------------
 echo.
-timeout /t 2 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 1: COMPATIBILITY SCAN
@@ -160,7 +205,7 @@ if not exist "manage.py" (
     echo [INFO]  Please navigate to the msu_platform folder and run this script again
     echo.
     pause
-    exit /b 1
+    goto :error_exit
 )
 echo [PASS]  Running from correct directory
 echo.
@@ -177,7 +222,7 @@ if %errorlevel% neq 0 (
     echo During installation, make sure to check "Add Python to PATH"
     echo.
     pause
-    exit /b 1
+    goto :error_exit
 )
 
 for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
@@ -193,7 +238,7 @@ if %PYTHON_MINOR% LSS 11 (
     if "%ENV_MODE%"=="prod" (
         echo [FAIL]  Python 3.11+ is strictly REQUIRED for PROD mode ^(you have %PYTHON_VERSION%^)
         pause
-        exit /b 1
+        goto :error_exit
     ) else (
         echo [WARN]  Python 3.11+ recommended ^(you have %PYTHON_VERSION%^)
         echo [INFO]  Platform may still work but upgrade recommended
@@ -213,7 +258,7 @@ if %errorlevel% neq 0 (
     if %errorlevel% neq 0 (
         echo [FAIL]  Could not install pip
         pause
-        exit /b 1
+        goto :error_exit
     )
 )
 echo [PASS]  pip is available
@@ -249,7 +294,7 @@ if "%ENV_MODE%"=="local" (
         if "%ENV_MODE%"=="prod" (
             echo [FAIL]  Internet connection is strictly REQUIRED for PROD mode
             pause
-            exit /b 1
+            goto :error_exit
         ) else (
             echo [WARN]  No internet connection detected
             echo [INFO]  Internet required for installing dependencies
@@ -260,7 +305,7 @@ echo.
 
 echo [PASS]  Compatibility scan complete!
 echo.
-timeout /t 2 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 2: DETECT LAN IP ADDRESS
@@ -274,32 +319,35 @@ if "%ENV_MODE%"=="local" (
     echo [INFO]  Skipping LAN IP detection in LOCAL mode
     set LAN_IP=127.0.0.1
     echo [PASS]  Forcing localhost only: 127.0.0.1
-) else (
-    for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
-        set IP=%%a
-        set IP=!IP:~1!
-        if not "!IP!"=="" (
-            if not "!IP:~0,3!"=="169" (
-                set LAN_IP=!IP!
-                goto :lan_found
-            )
+    goto :lan_check_done
+)
+
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
+    set IP=%%a
+    set IP=!IP:~1!
+    if not "!IP!"=="" (
+        if not "!IP:~0,3!"=="169" (
+            set LAN_IP=!IP!
+            goto :lan_found
         )
     )
-    :lan_found
-
-    if defined LAN_IP (
-        echo [PASS]  LAN IP Address: !LAN_IP!
-    ) else (
-        set LAN_IP=127.0.0.1
-        echo [WARN]  Could not detect LAN IP, using localhost only
-    )
 )
+:lan_found
+
+if defined LAN_IP (
+    echo [PASS]  LAN IP Address: !LAN_IP!
+) else (
+    set LAN_IP=127.0.0.1
+    echo [WARN]  Could not detect LAN IP, using localhost only
+)
+
+:lan_check_done
 echo.
 
 REM Get computer name
 echo [INFO]  Computer Name: %COMPUTERNAME%
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 3: CREATE VIRTUAL ENVIRONMENT
@@ -316,7 +364,7 @@ if exist "venv\" (
     if %errorlevel% neq 0 (
         echo [FAIL]  Failed to create virtual environment
         pause
-        exit /b 1
+        goto :error_exit
     )
     echo [PASS]  Virtual environment created
 )
@@ -327,11 +375,11 @@ call venv\Scripts\activate.bat
 if %errorlevel% neq 0 (
     echo [FAIL]  Failed to activate virtual environment
     pause
-    exit /b 1
+    goto :error_exit
 )
 echo [PASS]  Virtual environment activated
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 4: INSTALL PREREQUISITES
@@ -360,7 +408,7 @@ if exist "requirements.txt" (
         echo [INFO]  Trying verbose installation to show errors...
         pip install -r requirements.txt
         pause
-        exit /b 1
+        goto :error_exit
     )
     echo [PASS]  All dependencies installed successfully
 ) else (
@@ -369,7 +417,7 @@ if exist "requirements.txt" (
     pip install django djangorestframework django-cors-headers python-dotenv --quiet
 )
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 5: ENVIRONMENT CONFIGURATION
@@ -406,23 +454,23 @@ if "%ENV_MODE%"=="prod" (
     if !errorlevel! equ 0 (
         echo [FAIL]  PROD environment cannot run with DEBUG=True. Please update .env
         pause
-        exit /b 1
+        goto :error_exit
     )
     findstr /c:"dev-secret-key-change-in-production" .env >nul
     if !errorlevel! equ 0 (
         echo [FAIL]  PROD environment cannot use default SECRET_KEY. Please update .env
         pause
-        exit /b 1
+        goto :error_exit
     )
     if "%ADMIN_PASSWORD%"=="admin123" (
         echo [FAIL]  PROD environment cannot use default admin password. Update ADMIN_PASSWORD in launch.bat
         pause
-        exit /b 1
+        goto :error_exit
     )
     echo [PASS]  PROD checks passed successfully
     echo.
 )
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 6: DATABASE SETUP
@@ -437,11 +485,11 @@ if %errorlevel% neq 0 (
     echo [FAIL]  Database migration failed
     echo [INFO]  Check the error messages above
     pause
-    exit /b 1
+    goto :error_exit
 )
 echo [PASS]  Database migrations complete
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 7: SEED ADMIN USER
@@ -476,7 +524,7 @@ echo     Password: %ADMIN_PASSWORD%
 echo.
 echo [IMPORTANT] Change these credentials after first login!
 echo.
-timeout /t 2 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 8: POPULATE SEARCH INDEX
@@ -497,7 +545,7 @@ if "%ENV_MODE%"=="local" (
     )
 )
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 9: START SERVER
@@ -515,7 +563,7 @@ start /B python manage.py runserver 0.0.0.0:%DEFAULT_PORT% > server.log 2>&1
 
 REM Wait for server to start
 echo [INFO]  Waiting for server to start...
-timeout /t 3 /nobreak >nul
+ping -n 4 127.0.0.1 >nul
 
 REM Check if server started successfully
 netstat -an | findstr ":%DEFAULT_PORT%" >nul
@@ -526,7 +574,7 @@ if %errorlevel% equ 0 (
     echo [INFO]  Check server.log for details
 )
 echo.
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 10: DISPLAY ACCESS INFORMATION
@@ -577,7 +625,7 @@ if /i "%OPEN_BROWSER%"=="Y" (
     echo.
     echo [INFO]  Opening http://127.0.0.1:%DEFAULT_PORT% in default browser...
     start http://127.0.0.1:%DEFAULT_PORT%
-    timeout /t 2 /nobreak >nul
+    ping -n 3 127.0.0.1 >nul
 )
 
 echo.
@@ -590,6 +638,19 @@ echo.
 echo Showing server logs (last 20 lines, updates every 5 seconds)...
 echo.
 echo --------------------------------------------------------------------------------
+goto :show_logs
+
+:error_exit
+echo.
+echo ================================================================================
+echo [FATAL ERROR] An unexpected error occurred and operations were halted.
+echo Please review the errors printed above.
+echo %date% %time% - CRITICAL FAILURE during script execution ^(See console output^) >> msu_platform_error.log
+echo ================================================================================
+echo.
+echo Press any key to return to the Master Menu...
+pause >nul
+goto :master_menu
 
 REM Show live logs
 :show_logs
@@ -618,7 +679,7 @@ echo ---------------------------------------------------------------------------
 echo Press Ctrl+C to stop server ^| Refreshing in 5 seconds...
 echo --------------------------------------------------------------------------------
 
-timeout /t 5 /nobreak >nul
+ping -n 6 127.0.0.1 >nul
 goto :show_logs
 
 REM This line won't be reached due to infinite loop above

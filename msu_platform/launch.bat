@@ -360,7 +360,7 @@ echo.
 if exist "venv\" (
     echo [INFO]  Virtual environment already exists
 ) else (
-    echo [INFO]  Creating new virtual environment (inheriting global packages)...
+    echo [INFO]  Creating new virtual environment ^(inheriting global packages^)...
     python -m venv venv --system-site-packages
     if !errorlevel! neq 0 (
         echo [FAIL]  Failed to create virtual environment

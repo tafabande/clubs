@@ -19,11 +19,77 @@ REM HEADER
 REM ================================================================================
 color 0B
 title MSU Platform - One-Tap Launch
+:master_menu
 cls
 echo.
 echo ================================================================================
-echo        MSU PLATFORM - ONE-TAP LAUNCH
+echo        MSU PLATFORM - MASTER MENU
 echo        Midlands State University Gweru Campus, Zimbabwe
+echo ================================================================================
+echo.
+echo Please select an operation:
+echo   1. Launch Development Server
+echo   2. Start Docker Services (Production Simulation)
+echo   3. Run Test Suite
+echo   4. Deploy Platform
+echo   5. Stop All Services
+echo   6. Migrate Legacy Data
+echo   7. Exit
+echo.
+set /p MENU_CHOICE="Enter your choice (1-7) [1]: "
+if "%MENU_CHOICE%"=="" set MENU_CHOICE=1
+
+if "%MENU_CHOICE%"=="1" goto :launch_server
+if "%MENU_CHOICE%"=="2" goto :start_docker
+if "%MENU_CHOICE%"=="3" goto :run_tests
+if "%MENU_CHOICE%"=="4" goto :deploy_platform
+if "%MENU_CHOICE%"=="5" goto :stop_all
+if "%MENU_CHOICE%"=="6" goto :migrate_data
+if "%MENU_CHOICE%"=="7" exit /b 0
+
+echo Invalid choice.
+timeout /t 2 >nul
+goto :master_menu
+
+:start_docker
+echo [INFO] Starting Docker services...
+docker-compose up -d --build
+pause
+exit /b 0
+
+:run_tests
+echo [INFO] Running test suite...
+if exist "venv\Scripts\activate.bat" call venv\Scripts\activate.bat
+pytest -v
+pause
+exit /b 0
+
+:deploy_platform
+echo [INFO] Deploying platform...
+git pull
+docker-compose up -d --build
+pause
+exit /b 0
+
+:stop_all
+echo [INFO] Stopping all services...
+docker-compose down
+taskkill /IM python.exe /F
+echo [PASS] All services stopped.
+pause
+exit /b 0
+
+:migrate_data
+echo [INFO] Migrating legacy data...
+if exist "venv\Scripts\activate.bat" call venv\Scripts\activate.bat
+python scripts/migrate_flask_data.py
+pause
+exit /b 0
+
+:launch_server
+echo.
+echo ================================================================================
+echo        LAUNCHING SERVER
 echo ================================================================================
 echo.
 echo This script will:
@@ -36,7 +102,39 @@ echo   [*] Show real-time status logs
 echo.
 echo ================================================================================
 echo.
-timeout /t 3 /nobreak >nul
+
+REM ================================================================================
+REM STEP 0: ENVIRONMENT SELECTION
+REM ================================================================================
+echo [0/10] SELECT DEPLOYMENT ENVIRONMENT
+echo --------------------------------------------------------------------------------
+echo Please select the deployment environment:
+echo   1. Local  (Skip strict checks, localhost only, fast launch)
+echo   2. Online (Standard checks, accessible on LAN/Internet)
+echo   3. Prod   (Ultra-strict checks, production safety)
+set /p ENV_CHOICE="Enter your choice (1/2/3) [1]: "
+if "%ENV_CHOICE%"=="" set ENV_CHOICE=1
+
+if "%ENV_CHOICE%"=="1" (
+    set ENV_MODE=local
+    echo.
+    echo Selected Environment: LOCAL
+) else if "%ENV_CHOICE%"=="2" (
+    set ENV_MODE=online
+    echo.
+    echo Selected Environment: ONLINE
+) else if "%ENV_CHOICE%"=="3" (
+    set ENV_MODE=prod
+    echo.
+    echo Selected Environment: PROD
+) else (
+    set ENV_MODE=local
+    echo.
+    echo Invalid choice. Defaulting to LOCAL.
+)
+echo --------------------------------------------------------------------------------
+echo.
+timeout /t 2 /nobreak >nul
 
 REM ================================================================================
 REM STEP 1: COMPATIBILITY SCAN
@@ -92,9 +190,15 @@ for /f "tokens=1,2 delims=." %%a in ("%PYTHON_VERSION%") do (
     set PYTHON_MINOR=%%b
 )
 if %PYTHON_MINOR% LSS 11 (
-    echo [WARN]  Python 3.11+ recommended ^(you have %PYTHON_VERSION%^)
-    echo [INFO]  Platform may still work but upgrade recommended
-    echo.
+    if "%ENV_MODE%"=="prod" (
+        echo [FAIL]  Python 3.11+ is strictly REQUIRED for PROD mode ^(you have %PYTHON_VERSION%^)
+        pause
+        exit /b 1
+    ) else (
+        echo [WARN]  Python 3.11+ recommended ^(you have %PYTHON_VERSION%^)
+        echo [INFO]  Platform may still work but upgrade recommended
+        echo.
+    )
 ) else (
     echo [PASS]  Python version is compatible
     echo.
@@ -135,12 +239,22 @@ echo.
 
 REM Check network connectivity
 echo [CHECK] Checking internet connectivity...
-ping -n 1 google.com >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [PASS]  Internet connection available
+if "%ENV_MODE%"=="local" (
+    echo [SKIP]  Skipping internet check in LOCAL mode
 ) else (
-    echo [WARN]  No internet connection detected
-    echo [INFO]  Internet required for installing dependencies
+    ping -n 1 google.com >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [PASS]  Internet connection available
+    ) else (
+        if "%ENV_MODE%"=="prod" (
+            echo [FAIL]  Internet connection is strictly REQUIRED for PROD mode
+            pause
+            exit /b 1
+        ) else (
+            echo [WARN]  No internet connection detected
+            echo [INFO]  Internet required for installing dependencies
+        )
+    )
 )
 echo.
 
@@ -156,23 +270,29 @@ echo ---------------------------------------------------------------------------
 echo.
 
 REM Get LAN IP address
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
-    set IP=%%a
-    set IP=!IP:~1!
-    if not "!IP!"=="" (
-        if not "!IP:~0,3!"=="169" (
-            set LAN_IP=!IP!
-            goto :lan_found
+if "%ENV_MODE%"=="local" (
+    echo [INFO]  Skipping LAN IP detection in LOCAL mode
+    set LAN_IP=127.0.0.1
+    echo [PASS]  Forcing localhost only: 127.0.0.1
+) else (
+    for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
+        set IP=%%a
+        set IP=!IP:~1!
+        if not "!IP!"=="" (
+            if not "!IP:~0,3!"=="169" (
+                set LAN_IP=!IP!
+                goto :lan_found
+            )
         )
     )
-)
-:lan_found
+    :lan_found
 
-if defined LAN_IP (
-    echo [PASS]  LAN IP Address: %LAN_IP%
-) else (
-    set LAN_IP=127.0.0.1
-    echo [WARN]  Could not detect LAN IP, using localhost only
+    if defined LAN_IP (
+        echo [PASS]  LAN IP Address: !LAN_IP!
+    ) else (
+        set LAN_IP=127.0.0.1
+        echo [WARN]  Could not detect LAN IP, using localhost only
+    )
 )
 echo.
 
@@ -279,6 +399,29 @@ if not exist ".env" (
     echo [PASS]  Using existing .env configuration
 )
 echo.
+
+if "%ENV_MODE%"=="prod" (
+    echo [CHECK] Enforcing PROD strict environment checks...
+    findstr /c:"DEBUG=True" .env >nul
+    if !errorlevel! equ 0 (
+        echo [FAIL]  PROD environment cannot run with DEBUG=True. Please update .env
+        pause
+        exit /b 1
+    )
+    findstr /c:"dev-secret-key-change-in-production" .env >nul
+    if !errorlevel! equ 0 (
+        echo [FAIL]  PROD environment cannot use default SECRET_KEY. Please update .env
+        pause
+        exit /b 1
+    )
+    if "%ADMIN_PASSWORD%"=="admin123" (
+        echo [FAIL]  PROD environment cannot use default admin password. Update ADMIN_PASSWORD in launch.bat
+        pause
+        exit /b 1
+    )
+    echo [PASS]  PROD checks passed successfully
+    echo.
+)
 timeout /t 1 /nobreak >nul
 
 REM ================================================================================
@@ -343,11 +486,15 @@ echo ---------------------------------------------------------------------------
 echo.
 
 echo [INFO]  Populating search index...
-python manage.py populate_search_index >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [PASS]  Search index initialized
+if "%ENV_MODE%"=="local" (
+    echo [SKIP]  Skipping search index initialization in LOCAL mode for faster launch
 ) else (
-    echo [INFO]  Search index will be populated as content is added
+    python manage.py populate_search_index >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [PASS]  Search index initialized
+    ) else (
+        echo [INFO]  Search index will be populated as content is added
+    )
 )
 echo.
 timeout /t 1 /nobreak >nul

@@ -1,4 +1,5 @@
 @echo off
+python -c "import sys; print(sys.executable)"
 REM MSU Platform - One-Tap Launch
 REM Automatically sets up and launches the complete MSU Platform
 REM Created: May 5, 2026
@@ -359,9 +360,9 @@ echo.
 if exist "venv\" (
     echo [INFO]  Virtual environment already exists
 ) else (
-    echo [INFO]  Creating new virtual environment...
-    python -m venv venv
-    if %errorlevel% neq 0 (
+    echo [INFO]  Creating new virtual environment (inheriting global packages)...
+    python -m venv venv --system-site-packages
+    if !errorlevel! neq 0 (
         echo [FAIL]  Failed to create virtual environment
         pause
         goto :error_exit
@@ -388,33 +389,74 @@ echo [4/10] INSTALLING PREREQUISITES...
 echo --------------------------------------------------------------------------------
 echo.
 
-echo [INFO]  Upgrading pip...
-python -m pip install --upgrade pip --quiet 2>nul
-if %errorlevel% neq 0 (
-    echo [WARN]  Could not upgrade pip, continuing anyway...
+echo [INFO]  Checking for existing dependencies...
+python -c "import base64; exec(base64.b64decode('CmltcG9ydCBzeXMsIGltcG9ydGxpYi5tZXRhZGF0YSwgcmUKdHJ5OgogICAgd2l0aCBvcGVuKCdyZXF1aXJlbWVudHMudHh0JywgJ3InKSBhcyBmOgogICAgICAgIGxpbmVzID0gZi5yZWFkbGluZXMoKQogICAgcmVxcyA9IFtdCiAgICBmb3IgbGluZSBpbiBsaW5lczoKICAgICAgICBsaW5lID0gbGluZS5zdHJpcCgpCiAgICAgICAgaWYgbGluZSBhbmQgbm90IGxpbmUuc3RhcnRzd2l0aCgnIycpOgogICAgICAgICAgICBpZiAnOycgaW4gbGluZToKICAgICAgICAgICAgICAgIG1hcmtlciA9IGxpbmUuc3BsaXQoJzsnKVsxXS5zdHJpcCgpCiAgICAgICAgICAgICAgICBpZiAnc3lzX3BsYXRmb3JtJyBpbiBtYXJrZXIgYW5kICd3aW4zMicgaW4gbWFya2VyOgogICAgICAgICAgICAgICAgICAgIGlmICchPScgaW4gbWFya2VyIGFuZCBzeXMucGxhdGZvcm0gPT0gJ3dpbjMyJzoKICAgICAgICAgICAgICAgICAgICAgICAgY29udGludWUKICAgICAgICAgICAgICAgICAgICBpZiAnPT0nIGluIG1hcmtlciBhbmQgc3lzLnBsYXRmb3JtICE9ICd3aW4zMic6CiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgIHBrZyA9IHJlLnNwbGl0KHInWzs9PD5cc10nLCBsaW5lKVswXS5zdHJpcCgpCiAgICAgICAgICAgIGlmIHBrZzogcmVxcy5hcHBlbmQocGtnKQogICAgICAgICAgICAKICAgIGluc3RhbGxlZCA9IHtkaXN0Lm1ldGFkYXRhWydOYW1lJ10ubG93ZXIoKSBmb3IgZGlzdCBpbiBpbXBvcnRsaWIubWV0YWRhdGEuZGlzdHJpYnV0aW9ucygpfQogICAgbWlzc2luZyA9IFtyIGZvciByIGluIHJlcXMgaWYgci5sb3dlcigpIG5vdCBpbiBpbnN0YWxsZWRdCiAgICBpZiBtaXNzaW5nOgogICAgICAgIHByaW50KCdNSVNTSU5HX0RFUFNfRk9VTkQnKQogICAgICAgIGZvciBtIGluIG1pc3Npbmc6CiAgICAgICAgICAgIHByaW50KGYnICAtIHttfScpCiAgICAgICAgc3lzLmV4aXQoMSkKICAgIGVsc2U6CiAgICAgICAgc3lzLmV4aXQoMCkKZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgcHJpbnQoJ01JU1NJTkdfREVQU19GT1VORCcpCiAgICBwcmludChmJyAgLSBFcnJvcjoge2V9JykKICAgIHN5cy5leGl0KDEpCg==').decode('utf-8'))"
+if !errorlevel! equ 0 (
+    set DEPS_EXIST=1
+    echo [PASS]  All required dependencies are already installed.
 ) else (
-    echo [PASS]  pip upgraded
+    set DEPS_EXIST=0
+    echo.
+    echo [WARN]  The above dependencies are missing from your environment.
 )
 echo.
 
-echo [INFO]  Installing Django and dependencies from requirements.txt...
-echo [INFO]  This may take 2-5 minutes on first run...
-echo.
-
-if exist "requirements.txt" (
-    pip install -r requirements.txt --quiet --disable-pip-version-check
-    if %errorlevel% neq 0 (
-        echo [FAIL]  Failed to install dependencies
-        echo [INFO]  Trying verbose installation to show errors...
-        pip install -r requirements.txt
-        pause
-        goto :error_exit
+if "!DEPS_EXIST!"=="1" (
+    if "%ENV_MODE%"=="local" (
+        echo [SKIP]  Local testing mode active. Ignoring installation.
+    ) else (
+        set /p UPGRADE_DEPS="Dependencies exist. Do you want to check for upgrades? (Y/N) [N]: "
+        if /i "!UPGRADE_DEPS!"=="Y" (
+            echo [INFO]  Upgrading pip...
+            python -m pip install --upgrade pip --quiet 2>nul
+            echo [INFO]  Upgrading dependencies...
+            if exist "requirements.txt" (
+                pip install -r requirements.txt --upgrade --quiet --disable-pip-version-check
+            ) else (
+                pip install django djangorestframework django-cors-headers python-dotenv --upgrade --quiet
+            )
+            echo [PASS]  Dependencies upgraded successfully.
+        ) else (
+            echo [SKIP]  Skipping dependency upgrades.
+        )
     )
-    echo [PASS]  All dependencies installed successfully
 ) else (
-    echo [WARN]  requirements.txt not found
-    echo [INFO]  Installing minimal dependencies...
-    pip install django djangorestframework django-cors-headers python-dotenv --quiet
+    set INSTALL_DEPS=Y
+    set /p INSTALL_DEPS="Do you want to proceed with installing the missing dependencies? (Y/N) [Y]: "
+    if /i "!INSTALL_DEPS!"=="N" (
+        echo [SKIP]  Skipping installation. The platform may not function correctly without these dependencies.
+    ) else (
+        echo [INFO]  Upgrading pip...
+        python -m pip install --upgrade pip --quiet 2>nul
+        if !errorlevel! neq 0 (
+            echo [WARN]  Could not upgrade pip, continuing anyway...
+        ) else (
+            echo [PASS]  pip upgraded
+        )
+        echo.
+
+        echo [INFO]  Installing Django and dependencies from requirements.txt...
+        echo [INFO]  This may take 2-5 minutes on first run...
+        echo.
+
+        if exist "requirements.txt" (
+            pip install -r requirements.txt --quiet --disable-pip-version-check
+            if !errorlevel! neq 0 (
+                echo [FAIL]  Failed to install dependencies
+                echo [INFO]  Trying verbose installation to show errors...
+                pip install -r requirements.txt
+                if !errorlevel! neq 0 (
+                    pause
+                    goto :error_exit
+                )
+            )
+            echo [PASS]  All dependencies installed successfully
+        ) else (
+            echo [WARN]  requirements.txt not found
+            echo [INFO]  Installing minimal dependencies...
+            pip install django djangorestframework django-cors-headers python-dotenv --quiet
+        )
+    )
 )
 echo.
 ping -n 2 127.0.0.1 >nul

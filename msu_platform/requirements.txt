@@ -23,24 +23,3 @@ python-decouple
 Pillow
 python-magic; sys_platform != "win32"  # For MIME type detection
 python-magic-bin; sys_platform == "win32"
-
-# Storage & CDN
-boto3
-django-storages
-
-# Celery & Task Queue
-celery
-redis
-django-redis
-
-# Video Processing
-ffmpeg-python
-
-# Logging & Monitoring
-python-json-logger
-sentry-sdk
-
-# Development
-django-debug-toolbar
-pytest-django
-faker

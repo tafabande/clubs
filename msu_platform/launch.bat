@@ -388,12 +388,12 @@ echo [4/10] INSTALLING PREREQUISITES...
 echo --------------------------------------------------------------------------------
 echo.
 
-echo [INFO]  Upgrading pip, setuptools, and wheel...
-python -m pip install --upgrade pip setuptools wheel --quiet
+echo [INFO]  Upgrading pip...
+python -m pip install --upgrade pip --quiet 2>nul
 if %errorlevel% neq 0 (
     echo [WARN]  Could not upgrade pip, continuing anyway...
 ) else (
-    echo [PASS]  Package managers upgraded
+    echo [PASS]  pip upgraded
 )
 echo.
 

@@ -5,9 +5,13 @@ from .base import *
 
 DEBUG = True
 
-INSTALLED_APPS += [
-    'django_extensions',
-]
+try:
+    import django_extensions  # noqa: F401
+    INSTALLED_APPS += [
+        'django_extensions',
+    ]
+except ImportError:
+    pass
 
 # Allow all hosts in development
 ALLOWED_HOSTS = ['*']
@@ -17,6 +21,14 @@ SECURE_SSL_REDIRECT = False
 
 # Console email backend for development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Use local memory cache in development (no Redis required)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'msu-dev-cache',
+    }
+}
 
 # More verbose logging
 LOGGING = {

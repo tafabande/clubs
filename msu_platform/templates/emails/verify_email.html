@@ -1,0 +1,38 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Verify Your Email - MSU Platform{% endblock %}
+
+{% block content %}
+<h2>Welcome to MSU Platform, {{ user.get_full_name }}!</h2>
+
+<p>Thank you for registering with the Midlands State University Campus Organizations Platform.</p>
+
+<p>To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
+
+<div style="text-align: center;">
+    <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+</div>
+
+<p>Or copy and paste this link into your browser:</p>
+<div class="info-box">
+    <a href="{{ verification_url }}" style="word-break: break-all;">{{ verification_url }}</a>
+</div>
+
+<div class="warning">
+    <strong>⚠️ Important:</strong> This verification link will expire in 24 hours. If you didn't create an account with MSU Platform, please ignore this email.
+</div>
+
+<p>Once verified, you'll be able to:</p>
+<ul>
+    <li>Browse and join campus clubs</li>
+    <li>Connect with campus churches</li>
+    <li>Join sports teams</li>
+    <li>Register for campus activities</li>
+    <li>Create and manage your own organizations</li>
+</ul>
+
+<p>If you have any questions or need assistance, please contact our support team.</p>
+
+<p>Best regards,<br>
+The MSU Platform Team</p>
+{% endblock %}

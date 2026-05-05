@@ -1,0 +1,85 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Membership Approved - {{ organization.name }}{% endblock %}
+
+{% block content %}
+<h2>🎉 Welcome to {{ organization.name }}!</h2>
+
+<p>Hi {{ user.get_full_name }},</p>
+
+<p>Great news! Your membership request for <strong>{{ organization.name }}</strong> has been approved!</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0; color: #28a745;">✅ You're Now a Member</h3>
+    <p style="margin: 5px 0;"><strong>{{ org_type }}:</strong> {{ organization.name }}</p>
+    <p style="margin: 5px 0;"><strong>Status:</strong> Active Member</p>
+    <p style="margin: 5px 0;"><strong>Joined:</strong> Today</p>
+</div>
+
+<h3>🎯 What You Can Do Now</h3>
+<p>As an active member, you can:</p>
+<ul>
+    <li>Participate in {{ org_type }} meetings and events</li>
+    <li>Connect with other members</li>
+    <li>Access member-only resources and announcements</li>
+    <li>Contribute to {{ org_type }} activities</li>
+    <li>View and RSVP to upcoming events</li>
+</ul>
+
+<div style="text-align: center;">
+    <a href="{{ org_url }}" class="button">View {{ organization.name }}</a>
+</div>
+
+<h3>📅 Stay Updated</h3>
+<p>Make sure to check the {{ org_type }} page regularly for:</p>
+<ul>
+    <li>Upcoming meetings and events</li>
+    <li>Important announcements</li>
+    <li>Schedule changes</li>
+    <li>Member discussions</li>
+</ul>
+
+<h3>💡 Getting Started</h3>
+<div class="info-box">
+    <p><strong>Here are some tips to make the most of your membership:</strong></p>
+    <ul style="margin: 5px 0;">
+        <li>Introduce yourself to other members</li>
+        <li>Attend the next meeting or event</li>
+        <li>Review the {{ org_type }}'s schedule and activities</li>
+        <li>Enable notifications to stay informed</li>
+        <li>Reach out to admins if you have questions</li>
+    </ul>
+</div>
+
+{% if organization.meeting_schedule or organization.service_times or organization.practice_schedule %}
+<h3>📍 Meeting Information</h3>
+<div class="info-box">
+    {% if organization.meeting_schedule %}
+    <p style="margin: 5px 0;"><strong>Schedule:</strong> {{ organization.meeting_schedule }}</p>
+    {% endif %}
+    {% if organization.service_times %}
+    <p style="margin: 5px 0;"><strong>Service Times:</strong> {{ organization.service_times }}</p>
+    {% endif %}
+    {% if organization.practice_schedule %}
+    <p style="margin: 5px 0;"><strong>Practice Schedule:</strong> {{ organization.practice_schedule }}</p>
+    {% endif %}
+    {% if organization.location %}
+    <p style="margin: 5px 0;"><strong>Location:</strong> {{ organization.location }}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<h3>🤝 Connect With Us</h3>
+<p>Have questions or want to get more involved? Feel free to:</p>
+<ul>
+    <li>Message the {{ org_type }} admins</li>
+    <li>Attend the next meeting</li>
+    <li>Check the {{ org_type }} announcements</li>
+    <li>Connect with other members</li>
+</ul>
+
+<p>We're excited to have you as part of {{ organization.name }}!</p>
+
+<p>Best regards,<br>
+{{ organization.name }} Team</p>
+{% endblock %}

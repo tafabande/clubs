@@ -1,0 +1,62 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Welcome to MSU Platform{% endblock %}
+
+{% block content %}
+<h2>Welcome to MSU Platform, {{ user.get_full_name }}! 🎉</h2>
+
+<p>Your email has been verified and your account is now active!</p>
+
+<p>You're now part of the Midlands State University campus community platform where you can:</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0; color: #007bff;">✨ What You Can Do</h3>
+    <ul style="margin-bottom: 0;">
+        <li><strong>Explore Organizations:</strong> Browse clubs, churches, and sports teams</li>
+        <li><strong>Join Communities:</strong> Become a member of organizations that interest you</li>
+        <li><strong>Register for Events:</strong> Sign up for campus activities and events</li>
+        <li><strong>Create Organizations:</strong> Start your own club or group</li>
+        <li><strong>Connect with Students:</strong> Meet like-minded students</li>
+    </ul>
+</div>
+
+<h3>🚀 Get Started</h3>
+<p>Ready to dive in? Click the button below to explore the platform:</p>
+
+<div style="text-align: center;">
+    <a href="{{ login_url }}" class="button">Go to MSU Platform</a>
+</div>
+
+<h3>📋 Your Account Details</h3>
+<div class="info-box">
+    <p style="margin: 5px 0;"><strong>Name:</strong> {{ user.get_full_name }}</p>
+    <p style="margin: 5px 0;"><strong>Email:</strong> {{ user.email }}</p>
+    {% if user.student_id %}
+    <p style="margin: 5px 0;"><strong>Student ID:</strong> {{ user.student_id }}</p>
+    {% endif %}
+    {% if user.faculty %}
+    <p style="margin: 5px 0;"><strong>Faculty:</strong> {{ user.get_faculty_display }}</p>
+    {% endif %}
+</div>
+
+<h3>💡 Quick Tips</h3>
+<ul>
+    <li>Complete your profile to get personalized recommendations</li>
+    <li>Use the search feature to find specific organizations</li>
+    <li>Check your email regularly for notifications about your memberships</li>
+    <li>Explore different categories to discover new interests</li>
+</ul>
+
+<h3>🤝 Need Help?</h3>
+<p>If you have any questions or need assistance getting started, our support team is here to help:</p>
+<ul>
+    <li>Visit our Help Center</li>
+    <li>Contact support at <a href="mailto:support@msu.ac.zw">support@msu.ac.zw</a></li>
+    <li>Check out our FAQ section</li>
+</ul>
+
+<p>We're excited to have you on board!</p>
+
+<p>Best regards,<br>
+The MSU Platform Team</p>
+{% endblock %}

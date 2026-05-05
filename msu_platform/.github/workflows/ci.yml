@@ -1,0 +1,334 @@
+name: MSU Platform CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: '3.11'
+  POSTGRES_DB: msu_platform_test
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: test_password
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ./msu_platform
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run flake8
+        working-directory: ./msu_platform
+        run: |
+          flake8 apps config --count --show-source --statistics
+
+      - name: Check imports with isort
+        working-directory: ./msu_platform
+        run: |
+          isort apps config --check-only --diff
+
+      - name: Format check with black
+        working-directory: ./msu_platform
+        run: |
+          black apps config --check --diff
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ./msu_platform
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit
+
+      - name: Security audit with safety
+        working-directory: ./msu_platform
+        run: |
+          safety check --file requirements.txt --json || true
+
+      - name: Security scan with bandit
+        working-directory: ./msu_platform
+        run: |
+          bandit -r apps config -f json -o bandit-report.json || true
+
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: msu_platform/bandit-report.json
+          retention-days: 30
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libpq-dev
+
+      - name: Install Python dependencies
+        working-directory: ./msu_platform
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Create .env file
+        working-directory: ./msu_platform
+        run: |
+          cat > .env << EOF
+          DEBUG=True
+          SECRET_KEY=test-secret-key-for-ci-${{ github.sha }}
+          JWT_SECRET_KEY=test-jwt-secret-key-for-ci-${{ github.sha }}
+          DATABASE_URL=postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+          REDIS_URL=redis://localhost:6379/0
+          CELERY_BROKER_URL=redis://localhost:6379/0
+          CELERY_RESULT_BACKEND=redis://localhost:6379/0
+          USE_S3=False
+          RATE_LIMIT_ENABLED=True
+          VIDEO_TRANSCODING_ENABLED=False
+          EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+          ALLOWED_HOSTS=localhost,127.0.0.1
+          CORS_ALLOWED_ORIGINS=http://localhost:3000
+          CSRF_TRUSTED_ORIGINS=http://localhost:8000
+          FRONTEND_URL=http://localhost:3000
+          EOF
+
+      - name: Run migrations
+        working-directory: ./msu_platform
+        run: |
+          python manage.py migrate --settings=config.settings.testing
+
+      - name: Collect static files
+        working-directory: ./msu_platform
+        run: |
+          python manage.py collectstatic --noinput --settings=config.settings.testing
+
+      - name: Run tests with coverage
+        working-directory: ./msu_platform
+        run: |
+          pytest --cov=apps --cov-report=xml --cov-report=term-missing --cov-report=html -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./msu_platform/coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: msu_platform/htmlcov/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: msu_platform/test-results/
+          retention-days: 30
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/msu-platform
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./msu_platform
+          file: ./msu_platform/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/msu-platform:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/msu-platform:buildcache,mode=max
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        working-directory: ./msu_platform
+        run: |
+          cp .env.example .env
+          sed -i 's/DEBUG=False/DEBUG=True/' .env
+          sed -i "s/SECRET_KEY=.*/SECRET_KEY=test-secret-key-${{ github.sha }}/" .env
+
+      - name: Start services with Docker Compose
+        working-directory: ./msu_platform
+        run: |
+          docker-compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          sleep 20
+          docker-compose -f ./msu_platform/docker-compose.yml ps
+
+      - name: Check health endpoints
+        run: |
+          max_attempts=30
+          attempt=0
+
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://localhost:8000/health/ > /dev/null 2>&1; then
+              echo "Health check passed!"
+              break
+            fi
+            echo "Waiting for service to be ready... (attempt $((attempt+1))/$max_attempts)"
+            sleep 2
+            attempt=$((attempt+1))
+          done
+
+          if [ $attempt -eq $max_attempts ]; then
+            echo "Service failed to become ready"
+            docker-compose -f ./msu_platform/docker-compose.yml logs
+            exit 1
+          fi
+
+      - name: Run API tests
+        run: |
+          curl -f http://localhost:8000/health/ || exit 1
+          curl -f http://localhost:8000/health/detailed/ || exit 1
+          curl -f http://localhost:8000/health/db/ || exit 1
+          curl -f http://localhost:8000/ready/ || exit 1
+          curl -f http://localhost:8000/alive/ || exit 1
+
+      - name: Show logs on failure
+        if: failure()
+        working-directory: ./msu_platform
+        run: |
+          docker-compose logs
+
+      - name: Cleanup
+        if: always()
+        working-directory: ./msu_platform
+        run: |
+          docker-compose down -v
+
+  notify:
+    name: Notify Status
+    runs-on: ubuntu-latest
+    needs: [lint, test, security, build, integration-test]
+    if: always()
+
+    steps:
+      - name: Check job status
+        id: check
+        run: |
+          if [ "${{ needs.lint.result }}" == "failure" ] || \
+             [ "${{ needs.test.result }}" == "failure" ] || \
+             [ "${{ needs.security.result }}" == "failure" ] || \
+             [ "${{ needs.build.result }}" == "failure" ] || \
+             [ "${{ needs.integration-test.result }}" == "failure" ]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create status badge
+        run: |
+          echo "CI Status: ${{ steps.check.outputs.status }}"

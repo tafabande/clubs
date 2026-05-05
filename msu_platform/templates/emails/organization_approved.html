@@ -1,0 +1,64 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Your {{ org_type }} Has Been Approved - MSU Platform{% endblock %}
+
+{% block content %}
+<h2>🎉 Congratulations, {{ user.get_full_name }}!</h2>
+
+<p>Great news! Your {{ org_type }} <strong>"{{ organization.name }}"</strong> has been approved and is now live on the MSU Platform!</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0; color: #28a745;">✅ Your {{ org_type }} is Now Active</h3>
+    <p style="margin: 5px 0;"><strong>Name:</strong> {{ organization.name }}</p>
+    <p style="margin: 5px 0;"><strong>Category:</strong> {{ organization.get_category_display|default:organization.get_denomination_display|default:organization.get_sport_display }}</p>
+    <p style="margin: 5px 0;"><strong>Status:</strong> Approved & Active</p>
+</div>
+
+<h3>📢 What's Next?</h3>
+<p>Now that your {{ org_type }} is approved, students can discover and join it! Here's what you can do:</p>
+
+<ul>
+    <li><strong>Manage Members:</strong> Review and approve membership requests</li>
+    <li><strong>Update Information:</strong> Keep your {{ org_type }} details current</li>
+    <li><strong>Post Updates:</strong> Share news and announcements</li>
+    <li><strong>Plan Events:</strong> Organize activities for your members</li>
+    <li><strong>Grow Your Community:</strong> Promote your {{ org_type }} on campus</li>
+</ul>
+
+<div style="text-align: center;">
+    <a href="{{ org_url }}" class="button">View Your {{ org_type }}</a>
+</div>
+
+<h3>👥 Managing Your {{ org_type }}</h3>
+<p>As the creator, you have full administrative access to:</p>
+<ul>
+    <li>Edit {{ org_type }} details and description</li>
+    <li>Approve or reject membership requests</li>
+    <li>Assign roles to members (if applicable)</li>
+    <li>Post announcements and updates</li>
+    <li>View member statistics</li>
+</ul>
+
+<h3>📊 Best Practices</h3>
+<div class="info-box">
+    <ul style="margin: 5px 0;">
+        <li>Keep your {{ org_type }} description up-to-date and informative</li>
+        <li>Respond promptly to membership requests</li>
+        <li>Engage with members regularly</li>
+        <li>Share meeting times and locations clearly</li>
+        <li>Upload a logo or banner to make your {{ org_type }} stand out</li>
+    </ul>
+</div>
+
+<div class="warning">
+    <strong>⚠️ Important:</strong> Please ensure all activities comply with MSU campus policies. Violations may result in suspension or removal of your {{ org_type }}.
+</div>
+
+<h3>🤝 Need Help?</h3>
+<p>If you need assistance managing your {{ org_type }}, check out our admin guide or contact support.</p>
+
+<p>Congratulations again on getting your {{ org_type }} approved!</p>
+
+<p>Best regards,<br>
+The MSU Platform Team</p>
+{% endblock %}

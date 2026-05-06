@@ -17,9 +17,22 @@ export default defineConfig({
       '@contexts': path.resolve(__dirname, './src/contexts'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query', 'axios'],
+          'vendor-ui': ['lucide-react', 'framer-motion', 'clsx', 'tailwind-merge'],
+          'vendor-utils': ['date-fns'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
-    host: true, // Listen on all local IPs (0.0.0.0)
-    port: 3000,
+    host: '127.0.0.1',
+    port: 5173,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',

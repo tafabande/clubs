@@ -28,7 +28,7 @@ export const postsService = {
   /**
    * Get post by ID
    */
-  async getPost(id: number): Promise<PostDetail> {
+  async getPost(id: string | number): Promise<PostDetail> {
     const response = await api.get<PostDetail>(API_ENDPOINTS.POST_DETAIL(id));
     return response.data;
   },
@@ -66,7 +66,7 @@ export const postsService = {
   /**
    * Update post
    */
-  async updatePost(id: number, data: UpdatePostRequest): Promise<Post> {
+  async updatePost(id: string | number, data: UpdatePostRequest): Promise<Post> {
     const response = await api.patch<Post>(
       API_ENDPOINTS.POST_DETAIL(id),
       data
@@ -77,28 +77,28 @@ export const postsService = {
   /**
    * Delete post
    */
-  async deletePost(id: number): Promise<void> {
+  async deletePost(id: string | number): Promise<void> {
     await api.delete(API_ENDPOINTS.POST_DETAIL(id));
   },
 
   /**
    * Like post
    */
-  async likePost(id: number): Promise<void> {
+  async likePost(id: string | number): Promise<void> {
     await api.post(API_ENDPOINTS.POST_LIKE(id));
   },
 
   /**
    * Unlike post
    */
-  async unlikePost(id: number): Promise<void> {
+  async unlikePost(id: string | number): Promise<void> {
     await api.post(API_ENDPOINTS.POST_UNLIKE(id));
   },
 
   /**
    * Get post comments
    */
-  async getPostComments(id: number): Promise<PaginatedResponse<PostComment>> {
+  async getPostComments(id: string | number): Promise<PaginatedResponse<PostComment>> {
     const response = await api.get<PaginatedResponse<PostComment>>(
       API_ENDPOINTS.POST_COMMENTS(id)
     );
@@ -108,7 +108,7 @@ export const postsService = {
   /**
    * Create comment on post
    */
-  async createComment(postId: number, data: CreateCommentRequest): Promise<PostComment> {
+  async createComment(postId: string | number, data: CreateCommentRequest): Promise<PostComment> {
     const response = await api.post<PostComment>(
       API_ENDPOINTS.POST_COMMENTS(postId),
       data
@@ -119,7 +119,7 @@ export const postsService = {
   /**
    * Toggle like on post
    */
-  async toggleLike(id: number, isLiked: boolean): Promise<void> {
+  async toggleLike(id: string | number, isLiked: boolean): Promise<void> {
     if (isLiked) {
       await this.unlikePost(id);
     } else {

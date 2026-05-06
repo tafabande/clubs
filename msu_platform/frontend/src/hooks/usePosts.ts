@@ -13,17 +13,18 @@ import type {
 /**
  * Get paginated posts (feed)
  */
-export const usePosts = (filters?: PostFilters) => {
+export const usePosts = (filters?: PostFilters, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: [QUERY_KEYS.POSTS, filters],
     queryFn: () => postsService.getPosts(filters),
+    ...options,
   });
 };
 
 /**
  * Get infinite scroll posts
  */
-export const useInfinitePosts = (filters?: PostFilters) => {
+export const useInfinitePosts = (filters?: PostFilters, options?: { enabled?: boolean }) => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.POSTS, 'infinite', filters],
     queryFn: ({ pageParam = 1 }) =>
@@ -36,13 +37,14 @@ export const useInfinitePosts = (filters?: PostFilters) => {
       return lastPage.next ? allPages.length + 1 : undefined;
     },
     initialPageParam: 1,
+    ...options,
   });
 };
 
 /**
  * Get single post by ID
  */
-export const usePost = (id: number) => {
+export const usePost = (id: string | number) => {
   return useQuery({
     queryKey: [QUERY_KEYS.POST, id],
     queryFn: () => postsService.getPost(id),
@@ -53,7 +55,7 @@ export const usePost = (id: number) => {
 /**
  * Get post comments
  */
-export const usePostComments = (id: number) => {
+export const usePostComments = (id: string | number) => {
   return useQuery({
     queryKey: [QUERY_KEYS.POST, id, 'comments'],
     queryFn: () => postsService.getPostComments(id),
@@ -82,7 +84,7 @@ export const useUpdatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdatePostRequest }) =>
+    mutationFn: ({ id, data }: { id: string | number; data: UpdatePostRequest }) =>
       postsService.updatePost(id, data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
@@ -98,7 +100,7 @@ export const useDeletePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => postsService.deletePost(id),
+    mutationFn: (id: string | number) => postsService.deletePost(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
     },
@@ -112,7 +114,7 @@ export const useTogglePostLike = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, isLiked }: { id: number; isLiked: boolean }) =>
+    mutationFn: ({ id, isLiked }: { id: string | number; isLiked: boolean }) =>
       postsService.toggleLike(id, isLiked),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POST, variables.id] });
@@ -128,7 +130,7 @@ export const useCreateComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ postId, data }: { postId: number; data: CreateCommentRequest }) =>
+    mutationFn: ({ postId, data }: { postId: string | number; data: CreateCommentRequest }) =>
       postsService.createComment(postId, data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({

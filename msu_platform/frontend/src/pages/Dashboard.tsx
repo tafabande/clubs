@@ -5,6 +5,7 @@
 import React from 'react';
 import { Layout } from '@/components/layout';
 import { Card, Spinner } from '@/components/ui';
+import { CheckCircle2 } from 'lucide-react';
 import { PostCard, CreatePostWidget } from '@/components/features';
 import { useInfinitePosts } from '@/hooks';
 import { useAuth } from '@/hooks';
@@ -13,15 +14,15 @@ import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
 import { API_ENDPOINTS, QUERY_KEYS } from '@/utils/constants';
+import { logger } from '@/utils/logger';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { dashboard, isLoading: roleLoading } = useRoles();
 
-  // Redirect admin/mod/org_leader to their specific dashboards
-  if (!roleLoading && dashboard === 'admin') return <Navigate to="/admin" replace />;
-  if (!roleLoading && dashboard === 'moderator') return <Navigate to="/moderator" replace />;
-  if (!roleLoading && dashboard === 'org_leader') return <Navigate to="/org-leader" replace />;
+  React.useEffect(() => {
+    logger.info('Dashboard mounted', { user: user?.username, role: dashboard });
+  }, [user, dashboard]);
 
   const { data: userData } = useQuery({
     queryKey: [QUERY_KEYS.DASHBOARD_USER],
@@ -29,12 +30,27 @@ const DashboardPage: React.FC = () => {
       const res = await apiClient.get(API_ENDPOINTS.DASHBOARD_USER);
       return res.data;
     },
+    // Only run if we are on the user dashboard
+    enabled: !roleLoading && dashboard === 'user',
   });
 
   const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useInfinitePosts({ ordering: '-created_at' });
+    useInfinitePosts(
+      { ordering: '-created_at' },
+      {
+        // Only run if we are on the user dashboard
+        enabled: !roleLoading && dashboard === 'user',
+      }
+    );
 
-  const posts = data?.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []).filter(Boolean) || [];
+  // Redirect admin/mod/org_leader to their specific dashboards
+  if (!roleLoading && dashboard === 'admin') return <Navigate to="/admin" replace />;
+  if (!roleLoading && dashboard === 'moderator') return <Navigate to="/moderator" replace />;
+  if (!roleLoading && dashboard === 'org_leader') return <Navigate to="/org-leader" replace />;
+
+  const posts = Array.isArray(data?.pages) 
+    ? data!.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []).filter(Boolean) 
+    : [];
 
   if (roleLoading) {
     return <Layout><div className="flex justify-center py-32"><Spinner size="lg" /></div></Layout>;
@@ -45,8 +61,11 @@ const DashboardPage: React.FC = () => {
       <div className="px-6 max-w-7xl mx-auto animate-in">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">
+          <h1 className="text-4xl font-black mb-2 flex items-center gap-2">
             Welcome back, {user?.first_name}!
+            {user?.is_verified && (
+              <CheckCircle2 size={24} className="text-blue-400 fill-blue-400/20" />
+            )}
           </h1>
           <p className="text-white/60">Stay updated with your organizations</p>
         </div>
@@ -76,7 +95,7 @@ const DashboardPage: React.FC = () => {
               </Card>
             )}
 
-            {posts.map((post) => (
+            {Array.isArray(posts) && posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
 

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks';
 import { Button, Input } from '@/components/ui';
 import { getErrorMessage } from '@/services';
+import { logger } from '@/utils/logger';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -51,10 +52,12 @@ export const LoginForm: React.FC = () => {
     if (!validate()) return;
 
     try {
+      logger.info('Login form submitted', { email: formData.email });
       await login(formData);
+      logger.info('Login successful, navigating to dashboard');
       navigate('/dashboard');
     } catch (error) {
-      console.error('Login failed:', error);
+      logger.error('Login form error:', error);
     }
   };
 

@@ -5,11 +5,19 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db import models
 from django.db.models import Count
+from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 
 from apps.permissions.permissions import IsOrganizationAdmin
-from ..models import Church, ChurchMembership
-from ..serializers import ChurchSerializer, ChurchCreateSerializer, ChurchMembershipSerializer
+from ..models import Church, ChurchMembership, Post
+from ..serializers import (
+    ChurchSerializer,
+    ChurchCreateSerializer,
+    ChurchMembershipSerializer,
+    PostSerializer
+)
 
 
 class ChurchViewSet(viewsets.ModelViewSet):
@@ -60,6 +68,26 @@ class ChurchViewSet(viewsets.ModelViewSet):
         membership.status = 'inactive'
         membership.save()
         return Response({'message': 'Left successfully'})
+
+    @action(detail=True, methods=['get'])
+    def posts(self, request, pk=None):
+        """Get church posts."""
+        church = self.get_object()
+        content_type = ContentType.objects.get_for_model(Church)
+        posts = Post.objects.filter(
+            content_type=content_type,
+            object_id=church.id,
+            is_active=True
+        ).order_by('-is_pinned', '-created_at')
+
+        if not request.user.is_staff:
+            posts = posts.filter(
+                models.Q(visibility='public') |
+                models.Q(author=request.user)
+            )
+
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):

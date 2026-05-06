@@ -12,8 +12,11 @@ const OrganizationDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { type, id } = useParams<{ type: string; id: string }>();
-  const organizationId = parseInt(id || '0', 10);
+  const organizationId = id || '';
   const organizationType = type || 'club';
+
+  // Ensure type is valid for API calls (handle 'sports-teams' vs 'sports_team')
+  const apiType = organizationType.replace('-', '_');
 
   const { data: organization, isLoading, error } = useOrganization(organizationType, organizationId);
   const { data: postsData, isLoading: postsLoading } = useOrganizationPosts(organizationType, organizationId);
@@ -60,7 +63,7 @@ const OrganizationDetailPage: React.FC = () => {
     );
   }
 
-  const posts = Array.isArray(postsData?.results) ? postsData.results : [];
+  const posts = Array.isArray(postsData?.results) ? postsData!.results : [];
 
   return (
     <Layout>
@@ -137,7 +140,7 @@ const OrganizationDetailPage: React.FC = () => {
               </Card>
             )}
 
-            {posts.map((post) => (
+            {Array.isArray(posts) && posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

@@ -5,7 +5,7 @@
 // ============================================================================
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   username?: string;
   student_id: string;
@@ -44,7 +44,7 @@ export const OrganizationType = {
 };
 
 export interface BaseOrganization {
-  id: number;
+  id: string;
   name: string;
   description: string;
   organization_type: OrganizationType;
@@ -99,7 +99,7 @@ export type Organization = Club | Church | SportsTeam | Activity;
 // ============================================================================
 
 export interface PostMedia {
-  id: number;
+  id: string;
   media_type: 'image' | 'video' | 'document';
   file_url: string;
   thumbnail_url?: string;
@@ -108,13 +108,13 @@ export interface PostMedia {
 }
 
 export interface PostLike {
-  id: number;
+  id: string;
   user: User;
   created_at: string;
 }
 
 export interface PostComment {
-  id: number;
+  id: string;
   user: User;
   content: string;
   created_at: string;
@@ -124,7 +124,7 @@ export interface PostComment {
 }
 
 export interface Post {
-  id: number;
+  id: string;
   organization: BaseOrganization;
   author: User;
   content: string;
@@ -147,7 +147,7 @@ export interface PostDetail extends Post {
 // ============================================================================
 
 export interface Event {
-  id: number;
+  id: string;
   organization: BaseOrganization;
   title: string;
   description: string;
@@ -180,7 +180,7 @@ export enum MembershipStatus {
 }
 
 export interface Membership {
-  id: number;
+  id: string;
   user: User;
   organization: BaseOrganization;
   role: MembershipRole;
@@ -256,7 +256,7 @@ export interface ApiSuccess<T = unknown> {
 
 export interface CreatePostRequest {
   organization_type: OrganizationType | string;
-  organization_id: number;
+  organization_id: string;
   content: string;
   media_files?: File[];
 }
@@ -294,11 +294,11 @@ export interface UpdateOrganizationRequest {
 }
 
 export interface JoinOrganizationRequest {
-  organization_id: number;
+  organization_id: string;
 }
 
 export interface CreateEventRequest {
-  organization_id: number;
+  organization_id: string;
   title: string;
   description: string;
   event_type: string;
@@ -322,8 +322,8 @@ export interface OrganizationFilters {
 }
 
 export interface PostFilters {
-  organization_id?: number;
-  author_id?: number;
+  organization_id?: string;
+  author_id?: string;
   search?: string;
   ordering?: 'created_at' | '-created_at' | 'likes_count' | '-likes_count';
   page?: number;
@@ -331,7 +331,7 @@ export interface PostFilters {
 }
 
 export interface EventFilters {
-  organization_id?: number;
+  organization_id?: string;
   event_type?: string;
   start_date?: string;
   end_date?: string;

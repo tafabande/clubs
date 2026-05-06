@@ -5,17 +5,20 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db import models
 from django.db.models import Count
 from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 
 from apps.permissions.permissions import HasPermission, IsOrganizationAdmin
 from apps.permissions.services import PermissionService
-from ..models import Club, ClubMembership, OrganizationHistory
+from ..models import Club, ClubMembership, OrganizationHistory, Post
 from ..serializers import (
     ClubSerializer,
     ClubCreateSerializer,
     ClubMembershipSerializer,
-    OrganizationHistorySerializer
+    OrganizationHistorySerializer,
+    PostSerializer
 )
 
 
@@ -178,4 +181,26 @@ class ClubViewSet(viewsets.ModelViewSet):
         ).order_by('-date')[:30]  # Last 30 days
         
         serializer = OrganizationHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def posts(self, request, pk=None):
+        """Get club posts."""
+        club = self.get_object()
+        content_type = ContentType.objects.get_for_model(Club)
+        posts = Post.objects.filter(
+            content_type=content_type,
+            object_id=club.id,
+            is_active=True
+        ).order_by('-is_pinned', '-created_at')
+
+        # Reuse PostViewSet's filtering logic if needed, but for simplicity:
+        if not request.user.is_staff:
+            posts = posts.filter(
+                models.Q(visibility='public') |
+                models.Q(author=request.user)
+                # Membership check could be added here if needed
+            )
+
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data)

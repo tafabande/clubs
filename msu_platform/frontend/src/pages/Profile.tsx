@@ -4,7 +4,7 @@ import React from 'react';
 import { Layout } from '@/components/layout';
 import { Card, Avatar } from '@/components/ui';
 import { useAuth } from '@/hooks';
-import { Mail, Calendar } from 'lucide-react';
+import { Mail, Calendar, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const ProfilePage: React.FC = () => {
@@ -26,8 +26,11 @@ const ProfilePage: React.FC = () => {
             />
 
             <div className="flex-1">
-              <h1 className="text-3xl font-black mb-1">
+              <h1 className="text-3xl font-black mb-1 flex items-center gap-2">
                 {user.first_name} {user.last_name}
+                {user.is_verified && (
+                  <CheckCircle2 size={24} className="text-blue-400 fill-blue-400/20" />
+                )}
               </h1>
               <p className="text-white/60 mb-4">@{user.username || user.email}</p>
 

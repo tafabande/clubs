@@ -5,11 +5,19 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db import models
 from django.db.models import Count
+from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 
 from apps.permissions.permissions import IsOrganizationAdmin
-from ..models import SportsTeam, SportsTeamMembership
-from ..serializers import SportsTeamSerializer, SportsTeamCreateSerializer, SportsTeamMembershipSerializer
+from ..models import SportsTeam, SportsTeamMembership, Post
+from ..serializers import (
+    SportsTeamSerializer,
+    SportsTeamCreateSerializer,
+    SportsTeamMembershipSerializer,
+    PostSerializer
+)
 
 
 class SportsTeamViewSet(viewsets.ModelViewSet):
@@ -69,6 +77,26 @@ class SportsTeamViewSet(viewsets.ModelViewSet):
         membership.status = 'inactive'
         membership.save()
         return Response({'message': 'Left team successfully'})
+
+    @action(detail=True, methods=['get'])
+    def posts(self, request, pk=None):
+        """Get sports team posts."""
+        team = self.get_object()
+        content_type = ContentType.objects.get_for_model(SportsTeam)
+        posts = Post.objects.filter(
+            content_type=content_type,
+            object_id=team.id,
+            is_active=True
+        ).order_by('-is_pinned', '-created_at')
+
+        if not request.user.is_staff:
+            posts = posts.filter(
+                models.Q(visibility='public') |
+                models.Q(author=request.user)
+            )
+
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):

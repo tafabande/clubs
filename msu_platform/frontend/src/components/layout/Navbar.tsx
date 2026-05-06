@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, X, Inbox } from 'lucide-react';
+import { Bell, LogOut, Menu, X, Inbox, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import { Button, Avatar } from '@/components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,8 +32,11 @@ export const Navbar: React.FC = () => {
           >
             <span className="text-msu-blue font-black text-xl">M</span>
           </motion.div>
-          <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-900 dark:text-white">
+          <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-900 dark:text-white flex items-center gap-1">
             MSU<span className="text-msu-gold">HUB</span>
+            {isAuthenticated && user?.is_verified && (
+              <CheckCircle2 size={16} className="text-blue-400 fill-blue-400/20" />
+            )}
           </span>
         </Link>
 

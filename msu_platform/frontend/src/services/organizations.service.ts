@@ -43,12 +43,27 @@ const getEndpointByType = (type?: OrganizationType | string) => {
  * Helper to get the pluralized type string for URLs
  */
 const getPluralType = (type: OrganizationType | string): string => {
-  switch (type) {
-    case OrganizationType.CLUB: return 'clubs';
-    case OrganizationType.CHURCH: return 'churches';
-    case OrganizationType.SPORTS_TEAM: return 'sports-teams';
-    case OrganizationType.ACTIVITY: return 'activities';
-    default: return String(type).replace('_', '-');
+  const t = (type || 'club').toLowerCase();
+  switch (t) {
+    case OrganizationType.CLUB:
+    case 'club':
+    case 'clubs':
+      return 'clubs';
+    case OrganizationType.CHURCH:
+    case 'church':
+    case 'churches':
+      return 'churches';
+    case OrganizationType.SPORTS_TEAM:
+    case 'sports_team':
+    case 'sports-team':
+    case 'sports-teams':
+      return 'sports-teams';
+    case OrganizationType.ACTIVITY:
+    case 'activity':
+    case 'activities':
+      return 'activities';
+    default:
+      return String(t).replace('_', '-');
   }
 };
 
@@ -78,7 +93,7 @@ export const organizationsService = {
   /**
    * Get organization by ID and type
    */
-  async getOrganization(type: OrganizationType | string, id: number): Promise<Organization> {
+  async getOrganization(type: OrganizationType | string, id: string | number): Promise<Organization> {
     const pluralType = getPluralType(type);
     const response = await api.get<Organization>(API_ENDPOINTS.ORGANIZATION_DETAIL(pluralType, id));
     return response.data;
@@ -124,7 +139,7 @@ export const organizationsService = {
    */
   async updateOrganization(
     type: OrganizationType | string,
-    id: number,
+    id: string | number,
     data: UpdateOrganizationRequest
   ): Promise<Organization> {
     const formData = new FormData();
@@ -161,7 +176,7 @@ export const organizationsService = {
   /**
    * Delete organization
    */
-  async deleteOrganization(type: OrganizationType | string, id: number): Promise<void> {
+  async deleteOrganization(type: OrganizationType | string, id: string | number): Promise<void> {
     const pluralType = getPluralType(type);
     await api.delete(API_ENDPOINTS.ORGANIZATION_DETAIL(pluralType, id));
   },
@@ -169,7 +184,7 @@ export const organizationsService = {
   /**
    * Join organization
    */
-  async joinOrganization(type: OrganizationType | string, id: number): Promise<Membership> {
+  async joinOrganization(type: OrganizationType | string, id: string | number): Promise<Membership> {
     const pluralType = getPluralType(type);
     const response = await api.post<Membership>(API_ENDPOINTS.ORGANIZATION_JOIN(pluralType, id));
     return response.data;
@@ -178,7 +193,7 @@ export const organizationsService = {
   /**
    * Leave organization
    */
-  async leaveOrganization(type: OrganizationType | string, id: number): Promise<void> {
+  async leaveOrganization(type: OrganizationType | string, id: string | number): Promise<void> {
     const pluralType = getPluralType(type);
     await api.post(API_ENDPOINTS.ORGANIZATION_LEAVE(pluralType, id));
   },
@@ -186,7 +201,7 @@ export const organizationsService = {
   /**
    * Get organization members
    */
-  async getOrganizationMembers(type: OrganizationType | string, id: number): Promise<PaginatedResponse<Membership>> {
+  async getOrganizationMembers(type: OrganizationType | string, id: string | number): Promise<PaginatedResponse<Membership>> {
     const pluralType = getPluralType(type);
     const response = await api.get<PaginatedResponse<Membership>>(
       API_ENDPOINTS.ORGANIZATION_MEMBERS(pluralType, id)
@@ -197,7 +212,7 @@ export const organizationsService = {
   /**
    * Get organization posts
    */
-  async getOrganizationPosts(type: OrganizationType | string, id: number): Promise<PaginatedResponse<Post>> {
+  async getOrganizationPosts(type: OrganizationType | string, id: string | number): Promise<PaginatedResponse<Post>> {
     const pluralType = getPluralType(type);
     const response = await api.get<PaginatedResponse<Post>>(
       API_ENDPOINTS.ORGANIZATION_POSTS(pluralType, id)

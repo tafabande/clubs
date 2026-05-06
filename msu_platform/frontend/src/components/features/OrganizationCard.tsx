@@ -26,7 +26,8 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/organizations/${organization.organization_type}/${organization.id}`);
+    const type = organization.organization_type || 'club';
+    navigate(`/organizations/${type}/${organization.id}`);
   };
 
   return (

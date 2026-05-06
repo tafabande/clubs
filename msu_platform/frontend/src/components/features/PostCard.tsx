@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Share2 } from 'lucide-react';
+import { Heart, MessageSquare, Share2, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, Avatar, Button } from '@/components/ui';
 import { useAuth, useTogglePostLike } from '@/hooks';
@@ -54,14 +54,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="font-bold text-slate-900 dark:text-white">
+            <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
               {post.author.first_name} {post.author.last_name}
+              {post.author.is_verified && (
+                <CheckCircle2 size={14} className="text-blue-400 fill-blue-400/20" />
+              )}
             </h4>
             <span className="text-slate-500 dark:text-white/40 text-sm">@{post.author.username || post.author.email}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/40">
             <Link 
-              to={`/organizations/${post.organization?.type || 'club'}/${post.organization?.id}`} 
+              to={`/organizations/${post.organization?.organization_type || 'club'}/${post.organization?.id}`} 
               className="hover:text-msu-gold transition-colors font-medium"
             >
               {post.organization?.name || 'Unknown Organization'}
@@ -85,7 +88,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Media */}
       {Array.isArray(post.media) && post.media.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mb-4 rounded-xl overflow-hidden">
-          {post.media.slice(0, 4).map((media) => (
+          {Array.isArray(post.media) && post.media.slice(0, 4).map((media) => (
             <div key={media.id} className="aspect-square bg-slate-100 dark:bg-white/5">
               {media.media_type === 'image' && (
                 <img

@@ -26,7 +26,9 @@ const OrganizationsPage: React.FC = () => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteOrganizations(filters);
 
-  const organizations = data?.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []) || [];
+  const organizations = Array.isArray(data?.pages) 
+    ? data!.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []) 
+    : [];
 
   return (
     <Layout>
@@ -119,7 +121,7 @@ const OrganizationsPage: React.FC = () => {
               layout
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              {organizations.map((org) => (
+              {Array.isArray(organizations) && organizations.map((org) => (
                 <OrganizationCard key={org.id} organization={org} />
               ))}
             </motion.div>

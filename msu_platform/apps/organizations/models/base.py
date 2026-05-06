@@ -16,7 +16,9 @@ class BaseOrganization(models.Model):
     description = models.TextField(blank=True)
     email = models.EmailField()
     website = models.URLField(blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
     logo = models.ImageField(upload_to='organization_logos/', blank=True, null=True, validators=[validate_image_file])
+    cover_photo = models.ImageField(upload_to='organization_covers/', blank=True, null=True, validators=[validate_image_file])
     categories = models.CharField(max_length=500, blank=True, help_text='Comma-separated tags for interest matching (e.g., technology, sports, prayer)')
 
     is_active = models.BooleanField(default=True)

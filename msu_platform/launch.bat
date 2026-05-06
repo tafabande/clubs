@@ -614,6 +614,15 @@ if %errorlevel% equ 0 (
 echo.
 ping -n 2 127.0.0.1 >nul
 
+REM Start React frontend if it exists
+if exist "frontend\" (
+    echo [INFO]  Starting React frontend...
+    start /B cmd /c "cd frontend && npm run dev" > frontend.log 2>&1
+    echo [PASS]  Frontend started in background
+)
+echo.
+ping -n 2 127.0.0.1 >nul
+
 REM ================================================================================
 REM STEP 10: DISPLAY ACCESS INFORMATION
 REM ================================================================================
@@ -625,14 +634,14 @@ echo ===========================================================================
 echo                          MSU PLATFORM IS LIVE!
 echo ================================================================================
 echo.
-echo [ACCESS LINKS]
+echo   Localhost (API):  http://127.0.0.1:%DEFAULT_PORT%
+echo   Localhost (UI):   http://localhost:5173
+echo   LAN Access:       http://%LAN_IP%:%DEFAULT_PORT%
 echo.
-echo   Localhost:  http://127.0.0.1:%DEFAULT_PORT%
-echo   LAN:        http://%LAN_IP%:%DEFAULT_PORT%
+echo   Admin Panel:      http://127.0.0.1:%DEFAULT_PORT%/admin/
+echo   API Explorer:     http://127.0.0.1:%DEFAULT_PORT%/api/
 echo.
-echo   Admin Panel:     /admin/
-echo   API Endpoints:   /api/
-echo   Documentation:   /api/docs/
+echo   [!] The Frontend may take 5-10 seconds to initialize.
 echo.
 echo [ADMIN CREDENTIALS]
 echo.
@@ -661,8 +670,13 @@ REM Ask if user wants to open browser
 set /p OPEN_BROWSER="Open platform in browser? (Y/N): "
 if /i "%OPEN_BROWSER%"=="Y" (
     echo.
-    echo [INFO]  Opening http://127.0.0.1:%DEFAULT_PORT% in default browser...
-    start http://127.0.0.1:%DEFAULT_PORT%
+    if exist "frontend\" (
+        echo [INFO]  Opening Frontend at http://localhost:5173...
+        start http://localhost:5173
+    ) else (
+        echo [INFO]  Opening API at http://127.0.0.1:%DEFAULT_PORT%...
+        start http://127.0.0.1:%DEFAULT_PORT%
+    )
     ping -n 3 127.0.0.1 >nul
 )
 

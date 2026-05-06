@@ -8,6 +8,7 @@ import type {
   RegisterRequest,
   AuthResponse,
   User,
+  UpdateProfileRequest,
 } from '@/types';
 
 export const authService = {
@@ -68,6 +69,34 @@ export const authService = {
   async refreshToken(): Promise<void> {
     // refresh endpoint will read refresh_token from cookie
     await api.post(API_ENDPOINTS.REFRESH, {});
+  },
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(data: UpdateProfileRequest): Promise<User> {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
+    const response = await api.patch<User>(API_ENDPOINTS.ME, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    // Update stored user data
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data));
+
+    return response.data;
   },
 
   /**

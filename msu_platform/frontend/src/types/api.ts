@@ -18,6 +18,10 @@ export interface User {
   following_count: number;
   organizations_following_count: number;
   is_verified: boolean;
+  faculty?: string;
+  department?: string;
+  phone?: string;
+  year_of_study?: number;
   created_at: string;
   updated_at: string;
   date_joined?: string;
@@ -125,9 +129,13 @@ export interface PostComment {
 
 export interface Post {
   id: string;
-  organization: BaseOrganization;
+  organization: BaseOrganization & { logo?: string; cover_photo?: string };
   author: User;
+  post_type: string;
+  title?: string;
   content: string;
+  image?: string;
+  video?: string;
   media: PostMedia[];
   created_at: string;
   updated_at: string;
@@ -211,6 +219,16 @@ export interface RegisterRequest {
   year_of_study?: number;
 }
 
+export interface UpdateProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  bio?: string;
+  interests?: string;
+  profile_picture?: File;
+  phone?: string;
+  faculty?: string;
+  department?: string;
+}
 
 export interface AuthResponse {
   access: string;
@@ -256,7 +274,7 @@ export interface ApiSuccess<T = unknown> {
 
 export interface CreatePostRequest {
   organization_type: OrganizationType | string;
-  organization_id: string;
+  organization_id: string | number;
   content: string;
   media_files?: File[];
 }

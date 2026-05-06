@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, X, Inbox, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '@/hooks';
+import { Bell, LogOut, Menu, X, Inbox, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { useAuth, useAppContext } from '@/hooks';
 import { Button, Avatar } from '@/components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, setTheme } = useAppContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -52,9 +53,19 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            <button 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all active:scale-90 group"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? (
+                <Sun size={20} className="text-msu-gold" />
+              ) : (
+                <Moon size={20} className="text-msu-blue" />
+              )}
+            </button>
+
             {isAuthenticated ? (
               <>
                 <div className="relative">
@@ -129,14 +140,13 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 glass dark:glass-dark rounded-xl text-msu-blue dark:text-msu-gold hover:bg-white/10 transition-colors"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        {/* Mobile Menu Toggle */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden p-2 glass dark:glass-dark rounded-xl text-msu-blue dark:text-msu-gold hover:bg-white/10 transition-colors"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </nav>
 
       {/* Mobile Menu Overlay */}
@@ -186,6 +196,14 @@ export const Navbar: React.FC = () => {
                   </Button>
                 </div>
               )}
+              
+              <button 
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="mt-8 flex items-center gap-3 text-white/60 hover:text-white transition-colors"
+              >
+                {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+                <span className="text-lg font-bold">Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
+              </button>
             </div>
           </motion.div>
         )}

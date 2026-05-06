@@ -46,6 +46,8 @@ class PostViewSet(viewsets.ModelViewSet):
         """Get posts based on user permissions with optimization."""
         user = self.request.user
 
+        print(f"[DEBUG] User: {user}")
+        
         # Use optimized queryset from query optimizer
         queryset = PostQueryOptimizer.get_optimized_queryset(
             Post.objects.filter(is_active=True)
@@ -78,9 +80,12 @@ class PostViewSet(viewsets.ModelViewSet):
             activityregistration__user=user
         ).values_list('id', flat=True)
 
+        all_org_ids = list(user_clubs) + list(user_churches) + list(user_teams) + list(user_activities)
+        print(f"[DEBUG] all_org_ids: {all_org_ids}")
+
         queryset = queryset.filter(
             Q(visibility='public') |
-            Q(visibility='members_only', object_id__in=list(user_clubs) + list(user_churches) + list(user_teams) + list(user_activities)) |
+            Q(visibility='members_only', object_id__in=all_org_ids) |
             Q(author=user)
         )
 

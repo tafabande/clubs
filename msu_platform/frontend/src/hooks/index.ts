@@ -4,3 +4,4 @@ export * from './useAuth';
 export * from './useOrganizations';
 export * from './usePosts';
 export * from './useRoles';
+export { useAppContext } from '../context/AppContext';

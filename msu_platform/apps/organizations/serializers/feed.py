@@ -79,7 +79,9 @@ class PostSerializer(serializers.ModelSerializer):
         return {
             'id': str(org.id),
             'name': org.name,
-            'type': obj.organization_type
+            'type': obj.organization_type,
+            'logo': org.logo.url if org.logo else None,
+            'cover_photo': org.cover_photo.url if org.cover_photo else None
         }
 
     def get_user_has_liked(self, obj):

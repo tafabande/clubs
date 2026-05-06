@@ -101,7 +101,22 @@ export const getErrorMessage = (error: unknown): string => {
         return errorData.message;
       }
 
-      // Handle field-specific errors
+      // Handle field-specific errors (DRF default format)
+      if (typeof errorData === 'object' && errorData !== null) {
+        // If it's a dictionary of field errors
+        const entries = Object.entries(errorData);
+        if (entries.length > 0) {
+          const [field, messages] = entries[0];
+          if (Array.isArray(messages) && messages.length > 0) {
+            return `${field}: ${messages[0]}`;
+          }
+          if (typeof messages === 'string') {
+            return messages;
+          }
+        }
+      }
+
+      // Handle nested errors object
       if (errorData.errors) {
         const firstError = Object.values(errorData.errors)[0];
         if (Array.isArray(firstError) && firstError.length > 0) {

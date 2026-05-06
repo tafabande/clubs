@@ -15,6 +15,7 @@ import OrgLeaderDashboard from './pages/OrgLeaderDashboard';
 import OrganizationsPage from './pages/Organizations';
 import OrganizationDetailPage from './pages/OrganizationDetail';
 import ProfilePage from './pages/Profile';
+import SettingsPage from './pages/Settings';
 import NotFoundPage from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -79,6 +80,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <ProfilePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <ProtectedRoute>
+        <SettingsPage />
       </ProtectedRoute>
     ),
   },

@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '@/services';
 import { QUERY_KEYS } from '@/utils/constants';
-import type { LoginRequest, RegisterRequest } from '@/types';
+import type { LoginRequest, RegisterRequest, UpdateProfileRequest } from '@/types';
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -52,6 +52,14 @@ export const useAuth = () => {
     },
   });
 
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: UpdateProfileRequest) => authService.updateProfile(data),
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData([QUERY_KEYS.ME], updatedUser);
+    },
+  });
+
   return {
     user: user ?? authService.getStoredUser() ?? null,
     isLoading: isLoading && authService.isAuthenticated() && !user,
@@ -61,11 +69,14 @@ export const useAuth = () => {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
+    updateProfile: updateProfileMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
+    isUpdatingProfile: updateProfileMutation.isPending,
     loginError: loginMutation.error,
     registerError: registerMutation.error,
+    updateProfileError: updateProfileMutation.error,
   };
 };
 

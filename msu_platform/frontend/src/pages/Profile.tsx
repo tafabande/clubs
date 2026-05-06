@@ -1,10 +1,12 @@
 // Profile Page Component
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout';
 import { Card, Avatar } from '@/components/ui';
 import { useAuth } from '@/hooks';
-import { Mail, Calendar, CheckCircle2 } from 'lucide-react';
+import { Mail, Calendar, CheckCircle2, Settings } from 'lucide-react';
+import { Button } from '@/components/ui';
 import { formatDistanceToNow } from 'date-fns';
 
 const ProfilePage: React.FC = () => {
@@ -32,6 +34,14 @@ const ProfilePage: React.FC = () => {
                   <CheckCircle2 size={24} className="text-blue-400 fill-blue-400/20" />
                 )}
               </h1>
+              <div className="flex items-center gap-2 mb-4">
+                <Link to="/settings">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Settings size={14} />
+                    Edit Profile
+                  </Button>
+                </Link>
+              </div>
               <p className="text-white/60 mb-4">@{user.username || user.email}</p>
 
               {user.bio && <p className="text-white/80 mb-4">{user.bio}</p>}

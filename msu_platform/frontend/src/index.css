@@ -4,15 +4,19 @@
 
 @layer base {
   :root {
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --msu-blue: 221 100% 31%;
+    --msu-gold: 48 64% 53%;
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
   }
 
   body {

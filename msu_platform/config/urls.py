@@ -7,7 +7,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from apps.core.views import health
 
+from django.views.generic import RedirectView
+
 urlpatterns = [
+    path('', RedirectView.as_view(url='/api/', permanent=False), name='root_redirect'),
     path('admin/', admin.site.urls),
     path('api/', include('apps.api.urls')),
 

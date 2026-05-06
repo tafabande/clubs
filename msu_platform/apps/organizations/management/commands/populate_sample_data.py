@@ -141,9 +141,9 @@ class Command(BaseCommand):
                 faculty=random.choice(faculties),
                 department=random.choice(departments),
                 year_of_study=random.randint(1, 4),
-                student_number=f'MSU{2020 + random.randint(0, 4)}{random.randint(1000, 9999)}',
+                student_id=f'MSU{2020 + random.randint(0, 4)}{random.randint(1000, 9999)}',
                 is_active=True,
-                email_verified=True
+                is_verified=True
             )
             users.append(user)
 

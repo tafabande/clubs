@@ -533,32 +533,28 @@ echo [PASS]  Database migrations complete
 echo.
 ping -n 2 127.0.0.1 >nul
 
-REM ================================================================================
-REM STEP 7: SEED ADMIN USER
-REM ================================================================================
+REM Check and Seed Admin User
 echo [7/10] SEEDING ADMIN USER...
 echo --------------------------------------------------------------------------------
 echo.
 
-REM Check if admin already exists
-python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print('exists' if User.objects.filter(email='%ADMIN_EMAIL%').exists() else 'not_found')" > temp_check.txt 2>&1
-set /p ADMIN_EXISTS=<temp_check.txt
-del temp_check.txt
-
-if "%ADMIN_EXISTS%"=="exists" (
-    echo [INFO]  Admin user already exists: %ADMIN_EMAIL%
-    echo [PASS]  Skipping admin creation
+echo [INFO] Ensuring admin user exists...
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); email='%ADMIN_EMAIL%'; exists=User.objects.filter(email=email).exists(); print('SEED_EXISTS' if exists else 'SEED_NOT_FOUND')" > temp_seed.txt 2>&1
+findstr "SEED_EXISTS" temp_seed.txt >nul
+if !errorlevel! equ 0 (
+    echo [PASS] Admin user already exists: %ADMIN_EMAIL%
 ) else (
-    echo [INFO]  Creating admin user...
-    echo from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(email='%ADMIN_EMAIL%', password='%ADMIN_PASSWORD%', first_name='%ADMIN_FIRST_NAME%', last_name='%ADMIN_LAST_NAME%', student_number='MSU000000', faculty='Administration', department='IT', year_of_study=4, is_verified=True) | python manage.py shell
-
-    if %errorlevel% neq 0 (
-        echo [WARN]  Could not create admin user automatically
-        echo [INFO]  You can create one manually later with: python manage.py createsuperuser
+    echo [INFO] Creating admin user: %ADMIN_EMAIL%...
+    python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(email='%ADMIN_EMAIL%', password='%ADMIN_PASSWORD%', first_name='%ADMIN_FIRST_NAME%', last_name='%ADMIN_LAST_NAME%', student_id='MSU000000', faculty='science', department='IT', year_of_study=4, is_verified=True)"
+    if !errorlevel! neq 0 (
+        echo [WARN] Could not seed admin user automatically.
+        echo [INFO] Review the error in server.log or msu_platform_error.log
+        type temp_seed.txt >> msu_platform_error.log
     ) else (
-        echo [PASS]  Admin user created successfully
+        echo [PASS] Admin user created successfully.
     )
 )
+del temp_seed.txt
 echo.
 echo [CREDENTIALS]
 echo     Email:    %ADMIN_EMAIL%

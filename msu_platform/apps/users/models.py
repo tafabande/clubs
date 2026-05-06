@@ -23,6 +23,25 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password=None, **extra_fields):
         """Create and save a superuser."""
+        # Check if user already exists to make seeding idempotent
+        user = self.filter(email=email).first()
+        if user:
+            # If user exists, ensure they are a superuser
+            updated = False
+            if not user.is_superuser:
+                user.is_superuser = True
+                updated = True
+            if not user.is_staff:
+                user.is_staff = True
+                updated = True
+            if not user.is_verified:
+                user.is_verified = True
+                updated = True
+            
+            if updated:
+                user.save(using=self._db)
+            return user
+
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_verified', True)

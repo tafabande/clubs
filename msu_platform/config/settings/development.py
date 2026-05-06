@@ -27,6 +27,8 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'msu-dev-cache',
+        'KEY_PREFIX': 'msu_dev',
+        'TIMEOUT': 300,
     }
 }
 

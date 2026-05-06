@@ -41,7 +41,8 @@ def generate_cache_key(prefix: str, *args, **kwargs) -> str:
     key_string = json.dumps(key_data, sort_keys=True)
     key_hash = hashlib.md5(key_string.encode()).hexdigest()
 
-    return f"{settings.CACHES['default']['KEY_PREFIX']}:{prefix}:{key_hash}"
+    key_prefix = settings.CACHES['default'].get('KEY_PREFIX', 'msu')
+    return f"{key_prefix}:{prefix}:{key_hash}"
 
 
 def get_or_set_cache(
@@ -99,7 +100,8 @@ def invalidate_cache_pattern(pattern: str) -> None:
         redis_client = cache.client.get_client()
 
         # Get all keys matching pattern
-        full_pattern = f"{settings.CACHES['default']['KEY_PREFIX']}:{pattern}"
+        key_prefix = settings.CACHES['default'].get('KEY_PREFIX', 'msu')
+        full_pattern = f"{key_prefix}:{pattern}"
         keys = redis_client.keys(full_pattern)
 
         if keys:

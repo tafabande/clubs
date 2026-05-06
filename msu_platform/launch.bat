@@ -403,102 +403,62 @@ echo ---------------------------------------------------------------------------
 echo.
 
 echo [INFO]  Checking for existing dependencies...
-python -c "import base64; exec(base64.b64decode('aW1wb3J0IHN5cywgaW1wb3J0bGliLm1ldGFkYXRhLCByZQp0cnk6CiAgICByZXFzID0gW10KICAgIHdpdGggb3BlbigncmVxdWlyZW1lbnRzLnR4dCcsICdyJykgYXMgZjoKICAgICAgICBmb3IgbGluZSBpbiBmOgogICAgICAgICAgICBsaW5lID0gbGluZS5zdHJpcCgpCiAgICAgICAgICAgIGlmIGxpbmUgYW5kIG5vdCBsaW5lLnN0YXJ0c3dpdGgoJyMnKToKICAgICAgICAgICAgICAgIHBrZyA9IHJlLnNwbGl0KHInWzs9PD4gXHNdJywgbGluZSlbMF0uc3RyaXAoKQogICAgICAgICAgICAgICAgaWYgcGtnOiByZXFzLmFwcGVuZChwa2cpCiAgICBpbnN0YWxsZWQgPSB7ZC5tZXRhZGF0YVsnTmFtZSddLmxvd2VyKCkgZm9yIGQgaW4gaW1wb3J0bGliLm1ldGFkYXRhLmRpc3RyaWJ1dGlvbnMoKX0KICAgIG1pc3NpbmcgPSBbciBmb3IgciBpbiByZXFzIGlmIHIubG93ZXIoKSBub3QgaW4gaW5zdGFsbGVkXQogICAgaWYgbWlzc2luZzoKICAgICAgICBwcmludCgnTUlTU0lOR19ERVBTX0ZPVU5EJykKICAgICAgICBmb3IgbSBpbiBtaXNzaW5nOiBwcmludChmJyAgLSB7bX0nKQogICAgICAgIHN5cy5leGl0KDEpCiAgICBzeXMuZXhpdCgwKQpleGNlcHQ6CiAgICBzeXMuZXhpdCgwKQo=').decode('utf-8'))"
-if %errorlevel% equ 0 (
-    set DEPS_EXIST=1
-    echo [PASS]  All required dependencies are already installed.
-) else (
-    set DEPS_EXIST=0
+python scripts/check_dependencies.py
+if %errorlevel% neq 0 (
     echo.
-    echo [WARN]  The above dependencies are missing from your environment.
-)
-echo.
-
-if "!DEPS_EXIST!"=="1" (
-    if "%ENV_MODE%"=="local" (
-        echo [SKIP]  Local testing mode active. Ignoring installation.
-    ) else (
-        set /p UPGRADE_DEPS="Dependencies exist. Do you want to check for upgrades? (Y/N) [N]: "
-        if /i "!UPGRADE_DEPS!"=="Y" (
-            echo [INFO]  Upgrading pip...
-            python -m pip install --upgrade pip --quiet 2>nul
-            echo [INFO]  Upgrading dependencies...
-            if exist "requirements.txt" (
-                python -m pip install -r requirements.txt --upgrade --quiet --disable-pip-version-check
-            ) else (
-                python -m pip install django djangorestframework django-cors-headers python-dotenv --upgrade --quiet
-            )
-            echo [PASS]  Dependencies upgraded successfully.
-        ) else (
-            echo [SKIP]  Skipping dependency upgrades.
-        )
-    )
-) else (
-    set INSTALL_DEPS=Y
-    set /p INSTALL_DEPS="Do you want to proceed with installing the missing dependencies? (Y/N) [Y]: "
+    echo [WARN]  Some dependencies are missing from your environment.
+    set /p INSTALL_DEPS="Do you want to install missing dependencies? (Y/N) [Y]: "
     if /i "!INSTALL_DEPS!"=="N" (
-        echo [SKIP]  Skipping installation. The platform may not function correctly without these dependencies.
+        echo [SKIP]  Skipping installation.
     ) else (
-        echo [INFO]  Upgrading pip...
+        echo [INFO]  Installing dependencies...
         python -m pip install --upgrade pip --quiet 2>nul
-        if !errorlevel! neq 0 (
-            echo [WARN]  Could not upgrade pip, continuing anyway...
-        ) else (
-            echo [PASS]  pip upgraded
-        )
-        echo.
-
-        echo [INFO]  Installing Django and dependencies from requirements.txt...
-        echo [INFO]  This may take 2-5 minutes on first run...
-        echo.
-
         if exist "requirements.txt" (
-            python -m pip install -r requirements.txt --quiet --disable-pip-version-check
-            if !errorlevel! neq 0 (
-                echo [FAIL]  Failed to install dependencies
-                echo [INFO]  Trying verbose installation to show errors...
-                python -m pip install -r requirements.txt
-                if !errorlevel! neq 0 (
-                    pause
-                    goto :error_exit
-                )
-            )
-            echo [PASS]  Python dependencies installed successfully
+            python -m pip install -r requirements.txt --disable-pip-version-check
         ) else (
-            echo [WARN]  requirements.txt not found
-            echo [INFO]  Installing minimal dependencies...
             python -m pip install django djangorestframework django-cors-headers python-dotenv --quiet
         )
     )
+) else (
+    echo [PASS]  All required dependencies are already installed.
 )
 echo.
+echo [DEBUG] Step 4 reached end without closing.
+pause
 
-REM Frontend Dependency Check (Synchronous)
-if exist "frontend\" (
-    echo [CHECK] Checking Frontend dependencies...
-    if not exist "frontend\node_modules\" (
-        echo [WARN]  Frontend dependencies (node_modules) are missing!
-        echo [?] Would you like to install them now? (Required for UI)
-        choice /c YN /m "Select Y to install, N to skip:"
-        if !errorlevel! equ 1 (
-            echo [INFO]  Installing frontend dependencies...
-            pushd frontend
-            call npm install --legacy-peer-deps
-            popd
-            if !errorlevel! equ 0 (
-                echo [PASS]  Frontend dependencies installed successfully
-            ) else (
-                echo [FAIL]  Frontend installation failed
-                pause
-            )
-        ) else (
-            echo [SKIP]  Skipping frontend installation. Note: UI may not work.
-        )
-    ) else (
-        echo [PASS]  Frontend dependencies already verified
-    )
+
+REM ================================================================================
+REM STEP 4.5: FRONTEND CHECK
+REM ================================================================================
+if not exist "frontend" goto :step5
+
+echo [CHECK] Checking Frontend dependencies...
+if exist "frontend\node_modules" (
+    echo [PASS]  Frontend dependencies verified.
+    goto :step5
 )
+
+echo [WARN]  Frontend dependencies (node_modules) are missing!
+set "FRONTEND_INSTALL=Y"
+set /p FRONTEND_INSTALL="Do you want to install them now? (Y/N) [Y]: "
+if /i "!FRONTEND_INSTALL!"=="N" (
+    echo [SKIP]  Skipping frontend installation.
+    goto :step5
+)
+
+echo [INFO]  Installing frontend dependencies...
+pushd frontend
+call npm install --legacy-peer-deps
+popd
+echo [PASS]  Frontend installation attempted.
+
+:step5
 echo.
+echo [DEBUG] Frontend check complete.
+pause
+echo.
+ping -n 2 127.0.0.1 >nul
+
 ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
@@ -508,26 +468,29 @@ echo [5/10] CONFIGURING ENVIRONMENT...
 echo --------------------------------------------------------------------------------
 echo.
 
-if not exist ".env" (
-    if exist ".env.example" (
-        echo [INFO]  Creating .env file from .env.example...
-        copy .env.example .env >nul
-        echo [PASS]  Environment file created
-    ) else (
-        echo [INFO]  Creating default .env file...
-        (
-            echo DEBUG=True
-            echo SECRET_KEY=dev-secret-key-change-in-production
-            echo DJANGO_SETTINGS_MODULE=config.settings.development
-            echo ALLOWED_HOSTS=localhost,127.0.0.1,%LAN_IP%
-            echo DATABASE_URL=sqlite:///db.sqlite3
-        ) > .env
-        echo [PASS]  Default environment file created
-    )
-) else (
-    echo [INFO]  Environment file already exists
-    echo [PASS]  Using existing .env configuration
+if exist ".env" (
+    echo [INFO]  Environment file already exists.
+    goto :step5_env_done
 )
+
+if exist ".env.example" (
+    echo [INFO]  Creating .env file from .env.example...
+    copy .env.example .env >nul
+    goto :step5_env_done
+)
+
+echo [INFO]  Creating default .env file...
+echo DEBUG=True>.env
+echo SECRET_KEY=dev-secret-key-change-in-production>>.env
+echo DJANGO_SETTINGS_MODULE=config.settings.development>>.env
+echo ALLOWED_HOSTS=localhost,127.0.0.1,!LAN_IP!>>.env
+echo DATABASE_URL=sqlite:///db.sqlite3>>.env
+echo [PASS]  Default environment file created.
+
+:step5_env_done
+echo.
+echo [DEBUG] Step 5 complete.
+pause
 echo.
 
 if "%ENV_MODE%"=="prod" (
@@ -579,27 +542,13 @@ echo ---------------------------------------------------------------------------
 echo.
 
 echo [INFO] Ensuring admin user exists...
-python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); email='%ADMIN_EMAIL%'; exists=User.objects.filter(email=email).exists(); print('SEED_EXISTS' if exists else 'SEED_NOT_FOUND')" > temp_seed.txt 2>&1
-if !errorlevel! neq 0 (
-    echo [FAIL]  Database connection failed during seeding check.
-    echo [INFO]  Check your database configuration or run migrations again.
-    type temp_seed.txt >> msu_platform_error.log
+python scripts/seed_admin.py
+if %errorlevel% neq 0 (
+    echo [FAIL]  Admin seeding failed or encountered an error.
+    echo [INFO]  Check msu_platform_error.log for details.
 ) else (
-    findstr "SEED_EXISTS" temp_seed.txt >nul
-    if !errorlevel! equ 0 (
-        echo [PASS] Admin user already exists: %ADMIN_EMAIL%
-    ) else (
-        echo [INFO] Creating admin user: %ADMIN_EMAIL%...
-        python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(email='%ADMIN_EMAIL%', password='%ADMIN_PASSWORD%', first_name='%ADMIN_FIRST_NAME%', last_name='%ADMIN_LAST_NAME%', student_id='MSU000000', faculty='science', department='IT', year_of_study=4, is_verified=True)"
-        if !errorlevel! neq 0 (
-            echo [FAIL] Could not create admin user.
-            echo [INFO] Review the error in msu_platform_error.log
-        ) else (
-            echo [PASS] Admin user created successfully.
-        )
-    )
+    echo [PASS]  Admin seeding verified/complete.
 )
-del temp_seed.txt
 echo.
 echo [CREDENTIALS]
 echo     Email:    %ADMIN_EMAIL%

@@ -1,0 +1,891 @@
+# MSU CLUBS PLATFORM - COMPREHENSIVE TODO LIST
+# Generated: 2026-05-06
+# Repository: tafabande/clubs
+#
+# This file contains all improvements, features to add, bugs to fix, and notes
+# for enhancing the overall performance and cohesiveness of the project.
+#
+# Priority Levels: [CRITICAL] [HIGH] [MEDIUM] [LOW]
+# Categories: Security, Performance, Testing, Features, Bugs, Architecture, DevOps, Documentation
+
+################################################################################
+# CRITICAL PRIORITY - IMMEDIATE ACTION REQUIRED
+################################################################################
+
+## SECURITY ISSUES [CRITICAL]
+
+[ ] SEC-001: Remove .env file from git repository and regenerate all secrets
+    - Run: git rm msu_platform/.env
+    - Add .env to .gitignore
+    - Generate new SECRET_KEY and JWT_SECRET_KEY
+    - Rotate all secrets in production
+    - REASON: Hardcoded secrets are security vulnerability
+    - FILE: msu_platform/.env
+
+[ ] SEC-002: Move JWT tokens from localStorage to httpOnly cookies
+    - Modify frontend/src/services/api.ts to use cookies
+    - Update backend to set httpOnly cookies
+    - Add CSRF protection for cookie-based auth
+    - REASON: localStorage vulnerable to XSS attacks
+    - FILE: frontend/src/services/api.ts
+
+[ ] SEC-003: Add rate limiting to authentication endpoints
+    - Install django-ratelimit
+    - Add rate limits to login (5 attempts/15 min)
+    - Add rate limits to password reset (3 attempts/hour)
+    - Add rate limits to email verification
+    - REASON: Prevent brute force attacks
+    - FILES: apps/users/views.py
+
+[ ] SEC-004: Implement proper CSRF protection on all API endpoints
+    - Enable CSRF tokens for state-changing operations
+    - Set CSRF_COOKIE_HTTPONLY = True
+    - Add CSRF middleware to all POST/PUT/DELETE endpoints
+    - Test CSRF protection with automated tests
+    - REASON: Current CSRF_COOKIE_HTTPONLY is False (config/settings/base.py:176)
+    - FILE: config/settings/base.py
+
+[ ] SEC-005: Add input validation on file uploads
+    - Add MAX_UPLOAD_SIZE setting (e.g., 100MB for videos, 10MB for images)
+    - Verify MIME types match file extensions
+    - Scan uploaded files for malware
+    - Implement file size checks before processing
+    - REASON: Could lead to DoS or malicious file uploads
+    - FILES: apps/media/models.py, apps/posts/models.py
+
+[ ] SEC-006: Review and fix AllowAny permissions on sensitive endpoints
+    - Audit all API views with permission_classes = [AllowAny]
+    - Replace with proper authentication where needed
+    - Document why AllowAny is needed where it remains
+    - REASON: 19 endpoints allow unauthenticated access
+    - FILES: apps/*/views.py (all API views)
+
+[ ] SEC-007: Implement PostgreSQL Row-Level Security (RLS) policies
+    - Create RLS policies for all tables
+    - Apply migrations from migrations_backup/0002_enable_rls.py
+    - Test RLS with multi-tenant data access
+    - REASON: RLS middleware sets user but no policies enforced
+    - FILE: migrations_backup/0002_enable_rls.py
+
+[ ] SEC-008: Add Content Security Policy (CSP) headers
+    - Configure CSP in nginx.conf
+    - Add script-src, style-src, img-src directives
+    - Test CSP with inline scripts/styles
+    - REASON: No XSS protection in place
+    - FILE: msu_platform/nginx/conf.d/default.conf
+
+## CONFIGURATION ISSUES [CRITICAL]
+
+[ ] CFG-001: Create missing static directory
+    - Run: mkdir -p msu_platform/static
+    - Update .gitkeep in static directory
+    - Test collectstatic command
+    - REASON: collectstatic will fail in CI/CD
+    - LOCATION: msu_platform/static/
+
+[ ] CFG-002: Create requirements-dev.txt with all development dependencies
+    - Add: pytest, pytest-django, pytest-cov
+    - Add: flake8, isort, black, bandit, safety
+    - Add: ipython, django-debug-toolbar, django-extensions
+    - Pin all versions
+    - REASON: CI/CD workflow expects this file (line 35)
+    - FILE: msu_platform/requirements-dev.txt
+
+[ ] CFG-003: Pin all dependencies in requirements.txt
+    - Run: pip freeze > requirements.txt
+    - Review and lock all package versions
+    - Add comments for why specific versions chosen
+    - REASON: Unpinned dependencies break reproducible builds
+    - FILE: msu_platform/requirements.txt
+
+[ ] CFG-004: Add missing dependencies to requirements.txt
+    - Add: django-redis (used in settings but missing)
+    - Add: celery (referenced in settings)
+    - Add: django-celery-beat
+    - Add: sentry-sdk (imported in base.py)
+    - Add: requests (used in health checks)
+    - REASON: Missing dependencies will cause import errors
+    - FILE: msu_platform/requirements.txt
+
+## DATABASE ISSUES [CRITICAL]
+
+[ ] DB-001: Generate and apply all missing migrations
+    - Run: python manage.py makemigrations for all apps
+    - Review migration files before applying
+    - Apply migrations: python manage.py migrate
+    - REASON: Only 3 migrations found for 57 models
+    - LOCATION: apps/*/migrations/
+
+[ ] DB-002: Apply migrations from migrations_backup directory
+    - Review migrations_backup/0002_enable_rls.py
+    - Review migrations_backup/0003_search_indexes.py
+    - Review migrations_backup/0004_performance_indexes.py
+    - Apply if still needed or remove directory
+    - REASON: Important migrations not applied
+    - LOCATION: migrations_backup/
+
+################################################################################
+# HIGH PRIORITY - COMPLETE WITHIN 1-4 WEEKS
+################################################################################
+
+## TESTING GAPS [HIGH]
+
+[ ] TEST-001: Set up pytest configuration
+    - Create pytest.ini with proper settings
+    - Configure coverage reporting (.coveragerc)
+    - Add test database settings
+    - Set up fixtures directory structure
+    - REASON: No pytest config found, CI will fail
+    - FILE: msu_platform/pytest.ini
+
+[ ] TEST-002: Add backend API integration tests
+    - Test authentication flow (register, login, logout, refresh)
+    - Test organization CRUD operations
+    - Test post creation and feed retrieval
+    - Test search functionality
+    - Target: 80% code coverage
+    - REASON: Only 256 test methods for 864 Python files
+    - LOCATION: apps/*/tests/
+
+[ ] TEST-003: Add tests for users app views
+    - Test user registration with email verification
+    - Test password reset flow
+    - Test profile updates
+    - Test follow/unfollow functionality
+    - REASON: No tests found for users/views.py
+    - FILE: apps/users/tests/
+
+[ ] TEST-004: Add tests for permissions app
+    - Test role-based access control
+    - Test object-level permissions
+    - Test permission inheritance
+    - REASON: No tests found for permissions app
+    - LOCATION: apps/permissions/tests/
+
+[ ] TEST-005: Add tests for audit app
+    - Test audit trail creation
+    - Test audit log retrieval
+    - Test audit log filtering
+    - REASON: No tests found for audit app
+    - LOCATION: apps/audit/tests/
+
+[ ] TEST-006: Set up frontend testing infrastructure
+    - Install Vitest and @testing-library/react
+    - Create vitest.config.ts
+    - Set up test utils and custom renders
+    - Create mock API responses
+    - REASON: Zero frontend tests found
+    - LOCATION: msu_platform/frontend/
+
+[ ] TEST-007: Add frontend component tests
+    - Test UI components (Button, Card, Input, etc.)
+    - Test layout components (Navbar, Footer)
+    - Test feature components (OrganizationCard, PostCard)
+    - Target: 70% component coverage
+    - REASON: Critical user flows untested
+    - LOCATION: msu_platform/frontend/src/components/
+
+[ ] TEST-008: Add frontend integration tests
+    - Test authentication flow
+    - Test organization browsing and joining
+    - Test post creation and feed
+    - Use Playwright for E2E tests
+    - REASON: User workflows completely untested
+    - LOCATION: msu_platform/frontend/tests/
+
+## MISSING FEATURES [HIGH]
+
+[ ] FEAT-001: Implement email verification for user registration
+    - Set up email backend (SendGrid, AWS SES, or Mailgun)
+    - Create email templates for verification
+    - Add verification token generation and validation
+    - Update frontend to show verification status
+    - REASON: TODO comment at users/views.py:49-50
+    - FILE: apps/users/views.py
+
+[ ] FEAT-002: Implement password reset email sending
+    - Create password reset email template
+    - Generate secure reset tokens
+    - Add reset token validation
+    - Create password reset frontend UI
+    - REASON: TODO comment at users/views.py:173-174
+    - FILE: apps/users/views.py
+
+[ ] FEAT-003: Add settings/profile edit page in frontend
+    - Create ProfileSettings page component
+    - Add form for editing user information
+    - Add avatar upload functionality
+    - Add password change form
+    - REASON: Users cannot edit their profiles
+    - LOCATION: msu_platform/frontend/src/pages/
+
+[ ] FEAT-004: Implement notification system
+    - Create Notification model
+    - Add notification API endpoints
+    - Implement notification icon functionality
+    - Add real-time notification updates
+    - REASON: Bell icon exists but no functionality
+    - FILES: apps/notifications/ (new app)
+
+[ ] FEAT-005: Connect search functionality
+    - Implement backend search API
+    - Connect frontend search input to API
+    - Add search results page
+    - Implement search history
+    - REASON: Search UI exists but not connected
+    - FILES: msu_platform/frontend/src/components/features/
+
+[ ] FEAT-006: Add file upload UI for posts with media
+    - Create media upload component
+    - Add drag-and-drop functionality
+    - Show upload progress
+    - Add media preview before posting
+    - REASON: Backend supports media but no frontend UI
+    - LOCATION: msu_platform/frontend/src/components/features/
+
+[ ] FEAT-007: Implement admin dashboard
+    - Create admin-only pages
+    - Add user management interface
+    - Add organization moderation tools
+    - Add analytics dashboard
+    - REASON: No admin interface beyond Django admin
+    - LOCATION: msu_platform/frontend/src/pages/admin/
+
+[ ] FEAT-008: Add real-time updates with WebSockets
+    - Install Django Channels
+    - Set up WebSocket consumers
+    - Add real-time notifications
+    - Add live feed updates
+    - REASON: No real-time functionality
+    - FILES: config/asgi.py, apps/*/consumers.py
+
+## PERFORMANCE ISSUES [HIGH]
+
+[ ] PERF-001: Add select_related and prefetch_related to fix N+1 queries
+    - Audit all querysets for related object access
+    - Add select_related for ForeignKey lookups
+    - Add prefetch_related for ManyToMany/reverse FK
+    - REASON: Only 38 instances found, likely N+1 problems
+    - FILES: apps/*/views.py, apps/*/serializers.py
+
+[ ] PERF-002: Optimize feed query performance
+    - Add indexes on commonly filtered fields
+    - Implement pagination on feed algorithm
+    - Add query result caching with Redis
+    - Profile and optimize slow queries
+    - REASON: Feed generation won't scale beyond ~10k users
+    - FILE: apps/feed/views.py (12,880 bytes)
+
+[ ] PERF-003: Add database indexes from migrations_backup
+    - Review migrations_backup/0004_performance_indexes.py
+    - Apply performance indexes
+    - Create composite indexes for common queries
+    - REASON: Missing indexes will slow queries
+    - FILE: migrations_backup/0004_performance_indexes.py
+
+[ ] PERF-004: Implement view-level caching
+    - Add @cache_page decorator to stable views
+    - Cache feed items for authenticated users
+    - Cache search results
+    - Configure cache TTL appropriately
+    - REASON: Redis configured but limited caching
+    - FILES: apps/*/views.py
+
+[ ] PERF-005: Optimize video transcoding pipeline
+    - Add dedicated video queue in Celery
+    - Limit FFmpeg concurrent processes
+    - Add proper temp file cleanup
+    - Implement transcoding progress tracking
+    - REASON: Video transcoding will block workers
+    - FILE: apps/media/tasks.py
+
+[ ] PERF-006: Add search indexing with Elasticsearch or Meilisearch
+    - Evaluate Elasticsearch vs Meilisearch
+    - Set up search service
+    - Index organizations, posts, and users
+    - Implement autocomplete suggestions
+    - REASON: PostgreSQL full-text search won't scale
+    - FILES: apps/search/ (new app)
+
+## CODE QUALITY ISSUES [HIGH]
+
+[ ] QUAL-001: Refactor large view files
+    - Break down feed.py (12,880 bytes) into smaller modules
+    - Break down follow.py (10,521 bytes) into smaller modules
+    - Extract business logic to service layer
+    - REASON: Large files hard to maintain
+    - FILES: apps/feed/views.py, apps/follow/views.py
+
+[ ] QUAL-002: Create service layer for business logic
+    - Create apps/*/services.py files
+    - Move business logic from views to services
+    - Make services testable and reusable
+    - REASON: Business logic mixed with views
+    - LOCATION: apps/*/services.py (new files)
+
+[ ] QUAL-003: Add comprehensive docstrings
+    - Add docstrings to all public methods
+    - Use Google or NumPy docstring format
+    - Document parameters, return values, exceptions
+    - REASON: Many methods lack documentation
+    - FILES: All Python files
+
+[ ] QUAL-004: Implement consistent error handling
+    - Create custom exception classes
+    - Add exception handlers in views
+    - Standardize error response format
+    - REASON: Mix of Response() and exceptions
+    - FILES: apps/*/exceptions.py (new files)
+
+[ ] QUAL-005: Set up Prettier for frontend formatting
+    - Install prettier and eslint-config-prettier
+    - Create .prettierrc.json
+    - Add format script to package.json
+    - Run prettier on all files
+    - REASON: No formatting tool configured
+    - FILE: msu_platform/frontend/.prettierrc.json
+
+[ ] QUAL-006: Add ESLint to frontend CI/CD
+    - Add ESLint check to GitHub Actions
+    - Fail build on linting errors
+    - Fix all existing linting issues
+    - REASON: ESLint configured but not enforced
+    - FILE: .github/workflows/ci.yml
+
+[ ] QUAL-007: Implement form validation library in frontend
+    - Install React Hook Form or Formik
+    - Install Zod or Yup for schema validation
+    - Refactor all forms to use library
+    - REASON: Manual form handling prone to bugs
+    - FILES: msu_platform/frontend/src/components/features/
+
+[ ] QUAL-008: Add error boundaries to frontend
+    - Create ErrorBoundary component
+    - Wrap routes with error boundaries
+    - Add error logging to Sentry
+    - REASON: Errors will crash entire app
+    - FILE: msu_platform/frontend/src/components/ErrorBoundary.tsx
+
+################################################################################
+# MEDIUM PRIORITY - COMPLETE WITHIN 1-3 MONTHS
+################################################################################
+
+## ARCHITECTURE IMPROVEMENTS [MEDIUM]
+
+[ ] ARCH-001: Add API versioning
+    - Create /api/v1/ namespace
+    - Version all endpoints
+    - Document versioning strategy
+    - Plan for v2 migration
+    - REASON: Breaking changes will affect all clients
+    - FILES: config/urls.py
+
+[ ] ARCH-002: Implement repository pattern
+    - Create repository classes for models
+    - Abstract database access behind repositories
+    - Make switching ORMs easier
+    - REASON: Models accessed directly everywhere
+    - LOCATION: apps/*/repositories.py (new files)
+
+[ ] ARCH-003: Reduce coupling between organizations and posts
+    - Use events/signals for cross-app communication
+    - Avoid direct model imports between apps
+    - Define clear app boundaries
+    - REASON: Tight coupling makes changes difficult
+    - FILES: apps/organizations/, apps/posts/
+
+[ ] ARCH-004: Reduce usage of generic foreign keys
+    - Replace GenericForeignKey with explicit ForeignKey where possible
+    - Add database indexes for generic relations
+    - REASON: Generic FKs are slower and harder to query
+    - FILES: apps/*/models.py
+
+[ ] ARCH-005: Add state management library to frontend
+    - Evaluate Zustand vs Jotai vs Redux Toolkit
+    - Implement global state management
+    - Migrate scattered useState to centralized state
+    - REASON: State management is scattered
+    - FILES: msu_platform/frontend/src/store/ (new directory)
+
+## DOCUMENTATION [MEDIUM]
+
+[ ] DOC-001: Generate API documentation with Swagger/OpenAPI
+    - Install drf-spectacular
+    - Configure OpenAPI schema generation
+    - Add endpoint descriptions and examples
+    - Host Swagger UI at /api/docs/
+    - REASON: No API documentation exists
+    - FILES: config/settings/base.py, config/urls.py
+
+[ ] DOC-002: Create comprehensive deployment guide
+    - Document production deployment steps
+    - Add Docker deployment guide
+    - Document environment variables
+    - Add troubleshooting section
+    - REASON: No deployment documentation
+    - FILE: docs/DEPLOYMENT.md
+
+[ ] DOC-003: Create database schema diagram
+    - Generate ER diagram from models
+    - Document relationships between entities
+    - Add to documentation
+    - REASON: No visual schema documentation
+    - FILE: docs/DATABASE_SCHEMA.md
+
+[ ] DOC-004: Add architecture decision records (ADRs)
+    - Document major architecture decisions
+    - Include context, decision, consequences
+    - Track technology choices
+    - REASON: No record of why decisions were made
+    - LOCATION: docs/adr/
+
+[ ] DOC-005: Update README.md
+    - Remove references to legacy Flask app
+    - Add Django setup instructions
+    - Add frontend setup instructions
+    - Add screenshots
+    - REASON: README references old Flask app
+    - FILE: README.md
+
+[ ] DOC-006: Create CONTRIBUTING.md
+    - Add contribution guidelines
+    - Document code style requirements
+    - Add PR template
+    - Add commit message conventions
+    - REASON: No contribution guidelines
+    - FILE: CONTRIBUTING.md
+
+[ ] DOC-007: Add CHANGELOG.md
+    - Start versioning project
+    - Document all changes by version
+    - Follow Keep a Changelog format
+    - REASON: No changelog or versioning
+    - FILE: CHANGELOG.md
+
+## DEVOPS IMPROVEMENTS [MEDIUM]
+
+[ ] OPS-001: Move .github/workflows to repository root
+    - Move msu_platform/.github/workflows/ci.yml to .github/workflows/
+    - Update paths in workflow file
+    - Test that workflow triggers properly
+    - REASON: GitHub only looks at repo root
+    - FILE: .github/workflows/ci.yml
+
+[ ] OPS-002: Create .dockerignore file
+    - Exclude node_modules, __pycache__, .git
+    - Reduce Docker image size
+    - Speed up builds
+    - REASON: Missing .dockerignore creates bloated images
+    - FILE: msu_platform/.dockerignore
+
+[ ] OPS-003: Optimize Dockerfile with multi-stage builds
+    - Use multi-stage build to reduce image size
+    - Don't copy entire venv
+    - Run collectstatic at runtime, not build time
+    - REASON: Current Dockerfile inefficient
+    - FILE: msu_platform/Dockerfile
+
+[ ] OPS-004: Add health check dependencies to requirements
+    - Add requests library (used in health checks)
+    - Or use urllib instead
+    - REASON: Health checks will fail
+    - FILE: msu_platform/requirements.txt
+
+[ ] OPS-005: Configure staging environment
+    - Create staging settings module
+    - Set up staging server/container
+    - Add staging deployment workflow
+    - REASON: No staging environment configured
+    - FILES: config/settings/staging.py
+
+[ ] OPS-006: Set up Sentry error monitoring
+    - Get Sentry DSN
+    - Configure Sentry in settings
+    - Add Sentry to frontend
+    - Test error reporting
+    - REASON: Sentry imported but not configured
+    - FILES: config/settings/production.py
+
+[ ] OPS-007: Add metrics collection
+    - Install Prometheus client
+    - Add metrics endpoints
+    - Configure Grafana dashboard
+    - REASON: No metrics collection
+    - FILES: apps/monitoring/ (new app)
+
+[ ] OPS-008: Configure production logging
+    - Set up structured logging
+    - Log to file and stdout
+    - Configure log rotation
+    - Change log level from WARNING to INFO
+    - REASON: Production only logs warnings
+    - FILE: config/settings/production.py
+
+[ ] OPS-009: Add rollback strategy
+    - Document rollback procedures
+    - Add database backup before migrations
+    - Test rollback process
+    - REASON: No rollback strategy defined
+    - FILE: docs/ROLLBACK.md
+
+## DEPENDENCY MANAGEMENT [MEDIUM]
+
+[ ] DEP-001: Audit frontend dependencies for conflicts
+    - Investigate why --legacy-peer-deps needed
+    - Resolve peer dependency conflicts
+    - Update package.json
+    - REASON: Legacy peer deps flag suggests conflicts
+    - FILE: msu_platform/frontend/package.json
+
+[ ] DEP-002: Run npm audit and fix vulnerabilities
+    - Run: npm audit
+    - Fix or acknowledge vulnerabilities
+    - Document accepted risks
+    - REASON: Security vulnerabilities may exist
+    - LOCATION: msu_platform/frontend/
+
+[ ] DEP-003: Update React to latest version
+    - Update React 18.2.0 to 18.3+
+    - Update React DOM
+    - Test for breaking changes
+    - REASON: Outdated React version
+    - FILE: msu_platform/frontend/package.json
+
+[ ] DEP-004: Review and remove unused dependencies
+    - Find unused npm packages
+    - Find unused Python packages
+    - Remove to reduce bundle size
+    - REASON: Reduce dependency footprint
+    - FILES: requirements.txt, package.json
+
+################################################################################
+# LOW PRIORITY - COMPLETE WITHIN 3-6 MONTHS
+################################################################################
+
+## ACCESSIBILITY [LOW]
+
+[ ] A11Y-001: Add ARIA labels to all interactive elements
+    - Audit all buttons, links, inputs
+    - Add aria-label or aria-labelledby
+    - Test with screen reader
+    - REASON: No ARIA labels found
+    - FILES: msu_platform/frontend/src/components/
+
+[ ] A11Y-002: Implement keyboard navigation
+    - Add keyboard shortcuts for common actions
+    - Ensure tab order is logical
+    - Add skip links
+    - REASON: No keyboard navigation implemented
+    - FILES: All frontend components
+
+[ ] A11Y-003: Add focus management
+    - Trap focus in modals
+    - Restore focus after closing dialogs
+    - Add visible focus indicators
+    - REASON: No focus management
+    - FILES: msu_platform/frontend/src/components/ui/Modal.tsx
+
+[ ] A11Y-004: Verify color contrast ratios
+    - Use WCAG AAA contrast checker
+    - Fix failing color combinations
+    - Document color palette accessibility
+    - REASON: Color contrast not verified
+    - FILE: msu_platform/frontend/tailwind.config.js
+
+[ ] A11Y-005: Add alt text validation for images
+    - Require alt text on all images
+    - Validate alt text quality
+    - Add linting rule
+    - REASON: No alt text requirements
+    - FILES: ESLint config
+
+[ ] A11Y-006: Run Lighthouse accessibility audit
+    - Run audit on all pages
+    - Fix failing checks
+    - Aim for 95+ accessibility score
+    - REASON: No accessibility testing done
+    - TOOL: Chrome Lighthouse
+
+## SCALABILITY [LOW]
+
+[ ] SCALE-001: Implement CDN for static assets
+    - Set up CloudFront or Cloudflare
+    - Configure nginx to serve from CDN
+    - Update STATIC_URL setting
+    - REASON: Static assets served from origin
+    - FILES: config/settings/production.py
+
+[ ] SCALE-002: Add database read replicas
+    - Configure PostgreSQL replication
+    - Add read-only database router
+    - Route read queries to replicas
+    - REASON: All queries hit primary database
+    - FILES: config/settings/production.py
+
+[ ] SCALE-003: Implement horizontal scaling for Celery
+    - Add auto-scaling for workers
+    - Configure task routing
+    - Monitor queue depth
+    - REASON: Single worker won't scale
+    - FILES: docker-compose.yml
+
+[ ] SCALE-004: Add database connection pooling
+    - Configure pgBouncer
+    - Set connection limits
+    - Monitor connection usage
+    - REASON: No connection pooling configured
+    - FILES: config/settings/production.py
+
+[ ] SCALE-005: Add query timeout settings
+    - Set statement_timeout in PostgreSQL
+    - Add timeout to ORM queries
+    - Log slow queries
+    - REASON: No query timeouts set
+    - FILES: config/settings/base.py
+
+[ ] SCALE-006: Implement memory limits on Celery tasks
+    - Set celeryd_max_tasks_per_child
+    - Monitor memory usage
+    - Add task time limits
+    - REASON: No memory limits on tasks
+    - FILES: config/celery.py
+
+[ ] SCALE-007: Implement rate limiting application-wide
+    - Add per-user rate limits
+    - Add per-IP rate limits
+    - Configure Redis for rate limit storage
+    - REASON: Only basic rate limiting exists
+    - FILES: apps/*/views.py
+
+## CLEANUP [LOW]
+
+[ ] CLEAN-001: Remove legacy_flask directory
+    - Archive Flask code if needed
+    - Delete 146 files of unused code
+    - Update .gitignore
+    - REASON: Legacy code no longer needed
+    - LOCATION: legacy_flask/
+
+[ ] CLEAN-002: Clean up migrations_backup directory
+    - Apply needed migrations
+    - Delete directory
+    - Or document why it exists
+    - REASON: Unclear purpose of backup
+    - LOCATION: migrations_backup/
+
+[ ] CLEAN-003: Remove commented-out code
+    - Clean up nginx configuration
+    - Clean up settings files
+    - Remove dead code
+    - REASON: Commented code clutters codebase
+    - FILES: All files
+
+[ ] CLEAN-004: Resolve duplicate frontend directories
+    - Determine which frontend is canonical
+    - Remove duplicate directory
+    - Update references
+    - REASON: Two frontend directories exist
+    - LOCATIONS: /frontend and msu_platform/frontend/
+
+[ ] CLEAN-005: Improve commit message quality
+    - Add commit message template
+    - Document commit conventions
+    - Use conventional commits
+    - REASON: Recent commits: "sigh", "headache", "why am i even up"
+    - FILE: .gitmessage
+
+## ADVANCED FEATURES [LOW]
+
+[ ] ADV-001: Add internationalization (i18n)
+    - Install django-rosetta for backend
+    - Install react-i18next for frontend
+    - Add translation strings
+    - Support multiple languages
+    - REASON: No i18n support
+    - FILES: config/settings/base.py
+
+[ ] ADV-002: Add advanced analytics dashboard
+    - Track user engagement metrics
+    - Add organization growth charts
+    - Add post performance analytics
+    - REASON: No analytics beyond basic
+    - FILES: apps/analytics/ (new app)
+
+[ ] ADV-003: Implement mobile app with React Native
+    - Set up React Native project
+    - Share types with web frontend
+    - Implement mobile-specific features
+    - REASON: No mobile app
+    - LOCATION: mobile/ (new directory)
+
+[ ] ADV-004: Add event calendar functionality
+    - Create Event model
+    - Add calendar view
+    - Implement RSVP system
+    - Add reminders
+    - REASON: Events mentioned in scope
+    - FILES: apps/events/ (new app)
+
+[ ] ADV-005: Implement chat functionality
+    - Add Chat and Message models
+    - Implement WebSocket chat
+    - Add chat UI components
+    - Add typing indicators
+    - REASON: Social platform feature
+    - FILES: apps/chat/ (new app)
+
+[ ] ADV-006: Add recommendation engine
+    - Recommend organizations to users
+    - Recommend posts to users
+    - Use collaborative filtering
+    - REASON: Improve user engagement
+    - FILES: apps/recommendations/ (new app)
+
+################################################################################
+# NOTES AND OBSERVATIONS
+################################################################################
+
+## CODEBASE STATISTICS
+- Backend: 864 Python files
+- Frontend: 51 TypeScript files, 3,362 lines of code
+- Total Models: 57
+- API Endpoints: ~20
+- Test Coverage: <30% estimated
+- Test Files: 12 backend, 0 frontend
+
+## ARCHITECTURE NOTES
+- Django REST Framework backend with PostgreSQL
+- React + TypeScript + Vite frontend
+- Celery for async tasks (video transcoding, emails)
+- Redis for caching and session storage
+- Nginx reverse proxy for production
+- Docker Compose for containerization
+
+## SECURITY NOTES
+- CRITICAL: .env file contains hardcoded secrets and is committed to git
+- CRITICAL: JWT tokens stored in localStorage (XSS vulnerable)
+- High: Missing rate limiting on auth endpoints
+- High: AllowAny permissions on 19 endpoints
+- Medium: No CSP headers configured
+
+## PERFORMANCE NOTES
+- Feed generation algorithm won't scale beyond ~10k users
+- Missing database indexes (only in migrations_backup)
+- N+1 query problems likely (only 38 select_related/prefetch_related)
+- No query result caching despite Redis setup
+- Video transcoding could overwhelm Celery workers
+
+## TESTING NOTES
+- Backend: 256 test methods for 864 files (inadequate coverage)
+- Frontend: Zero tests (critical gap)
+- No integration tests for API endpoints
+- No E2E tests for user workflows
+- Missing pytest configuration
+
+## DOCUMENTATION NOTES
+- No API documentation (Swagger/OpenAPI)
+- README references legacy Flask app
+- No deployment guide
+- No architecture diagrams
+- No contribution guidelines
+
+## DEPLOYMENT NOTES
+- CI/CD workflow exists but in wrong location (.github needs to be at repo root)
+- Missing requirements-dev.txt will cause CI to fail
+- Missing static directory will cause collectstatic to fail
+- Health checks may fail (requests not in requirements.txt)
+
+## DEPENDENCY NOTES
+- Backend: All packages unpinned (breaks reproducibility)
+- Backend: Missing dependencies (django-redis, celery, sentry-sdk, requests)
+- Frontend: --legacy-peer-deps flag suggests conflicts
+- Frontend: React version outdated (18.2.0 vs 18.3+)
+
+## TECHNICAL DEBT
+- legacy_flask/ directory with 146 unused files
+- migrations_backup/ directory with unclear purpose
+- Commented-out code throughout
+- Duplicate frontend directories
+- Recent commit messages show frustration
+
+################################################################################
+# IMPLEMENTATION PRIORITY TIMELINE
+################################################################################
+
+## WEEK 1: Critical Security & Configuration
+1. Remove .env from git, regenerate secrets
+2. Create missing directories (static/)
+3. Create requirements-dev.txt
+4. Pin all dependencies
+5. Apply missing migrations
+
+## WEEKS 2-3: Security Hardening
+6. Move JWT to httpOnly cookies
+7. Add rate limiting to auth endpoints
+8. Implement CSRF protection
+9. Add file upload validation
+10. Fix AllowAny permissions
+
+## WEEKS 4-6: Testing & Quality
+11. Set up pytest configuration
+12. Add backend API tests (target 80% coverage)
+13. Set up frontend testing (Vitest + Testing Library)
+14. Add frontend component tests
+15. Implement form validation library
+
+## WEEKS 7-9: Missing Features
+16. Implement email verification
+17. Implement password reset emails
+18. Add notification system
+19. Connect search functionality
+20. Add file upload UI
+
+## WEEKS 10-12: Performance & Architecture
+21. Optimize database queries (select_related/prefetch_related)
+22. Add database indexes
+23. Implement view-level caching
+24. Refactor to service layer
+25. Add API versioning
+
+## MONTHS 4-6: Advanced Features & Scalability
+26. Add WebSocket real-time updates
+27. Implement search with Elasticsearch/Meilisearch
+28. Add analytics dashboard
+29. Implement CDN for static assets
+30. Add database read replicas
+
+################################################################################
+# SUCCESS METRICS
+################################################################################
+
+## Code Quality
+- [ ] 80%+ test coverage (backend)
+- [ ] 70%+ test coverage (frontend)
+- [ ] Zero critical security vulnerabilities
+- [ ] All ESLint/flake8 errors resolved
+- [ ] API documentation coverage 100%
+
+## Performance
+- [ ] Page load time <2 seconds
+- [ ] API response time <200ms (p95)
+- [ ] Database query time <50ms (p95)
+- [ ] Feed generation scales to 100k users
+- [ ] No N+1 query problems
+
+## Security
+- [ ] All secrets in secure vault
+- [ ] CSRF protection on all endpoints
+- [ ] Rate limiting on all public endpoints
+- [ ] Input validation on all forms
+- [ ] CSP headers configured
+
+## User Experience
+- [ ] WCAG AA compliance
+- [ ] Mobile responsive
+- [ ] <3 clicks to key features
+- [ ] Real-time notifications
+- [ ] <5 second upload time for media
+
+################################################################################
+# END OF TODO LIST
+################################################################################

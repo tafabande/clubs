@@ -1,4 +1,0 @@
-/* App specific styles can go here */
-.page-container {
-  @apply container mx-auto px-4 py-8;
-}

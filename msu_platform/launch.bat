@@ -573,22 +573,49 @@ echo.
 
 echo [INFO]  Populating search index...
 if "%ENV_MODE%"=="local" (
-    echo [SKIP]  Skipping search index initialization in LOCAL mode for faster launch
+    echo [SKIP]  Skipping search index initialization in LOCAL mode
 ) else (
-    python manage.py populate_search_index >nul 2>&1
+    python manage.py populate_search_index
     if !errorlevel! equ 0 (
-        echo [PASS]  Search index initialized
+        echo [PASS]  Search index initialized successfully
     ) else (
-        echo [INFO]  Search index will be populated as content is added
+        echo [WARN]  Search index population encountered an issue.
+        echo [INFO]  The platform will still run; index will build as you add content.
     )
 )
 echo.
 ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
+REM STEP 8.5: FRONTEND HEALTH CHECK
+REM ================================================================================
+if exist "frontend\" (
+    echo [8.5/10] CHECKING FRONTEND ENVIRONMENT...
+    echo --------------------------------------------------------------------------------
+    if not exist "frontend\node_modules\" (
+        echo [WARN]  Frontend dependencies (node_modules) are missing!
+        echo [INFO]  The React frontend requires these to run.
+        set /p INSTALL_FE="Install frontend dependencies now? (Y/N): "
+        if /i "!INSTALL_FE!"=="Y" (
+            echo [INFO]  Installing frontend dependencies (this may take 2-5 minutes)...
+            cd frontend && npm install --legacy-peer-deps && cd ..
+            if !errorlevel! equ 0 (
+                echo [PASS]  Frontend dependencies installed successfully
+            ) else (
+                echo [FAIL]  Failed to install frontend dependencies
+                echo [INFO]  Please try running 'npm install --legacy-peer-deps' manually in the frontend folder.
+            )
+        )
+    ) else (
+        echo [PASS]  Frontend dependencies verified.
+    )
+    echo.
+)
+
+REM ================================================================================
 REM STEP 9: START SERVER
 REM ================================================================================
-echo [9/10] STARTING DJANGO DEVELOPMENT SERVER...
+echo [9/10] STARTING PLATFORM SERVICES...
 echo --------------------------------------------------------------------------------
 echo.
 

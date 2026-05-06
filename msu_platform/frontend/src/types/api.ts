@@ -180,17 +180,24 @@ export interface Membership {
 // ============================================================================
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
+
 export interface RegisterRequest {
-  username: string;
   email: string;
+  student_id: string;
   password: string;
+  password_confirm: string;
   first_name: string;
   last_name: string;
+  phone?: string;
+  faculty?: string;
+  department?: string;
+  year_of_study?: number;
 }
+
 
 export interface AuthResponse {
   access: string;

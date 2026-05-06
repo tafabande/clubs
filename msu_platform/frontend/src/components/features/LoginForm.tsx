@@ -12,7 +12,7 @@ export const LoginForm: React.FC = () => {
   const { login, isLoggingIn, loginError } = useAuth();
 
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -30,8 +30,10 @@ export const LoginForm: React.FC = () => {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
     }
 
     if (!formData.password) {
@@ -64,14 +66,14 @@ export const LoginForm: React.FC = () => {
       )}
 
       <Input
-        label="Username"
-        name="username"
-        type="text"
-        value={formData.username}
+        label="Email Address"
+        name="email"
+        type="email"
+        value={formData.email}
         onChange={handleChange}
-        error={errors.username}
-        placeholder="Enter your username"
-        autoComplete="username"
+        error={errors.email}
+        placeholder="Enter your email"
+        autoComplete="email"
       />
 
       <Input
@@ -84,6 +86,7 @@ export const LoginForm: React.FC = () => {
         placeholder="Enter your password"
         autoComplete="current-password"
       />
+
 
       <Button type="submit" className="w-full" isLoading={isLoggingIn}>
         <LogIn size={20} />

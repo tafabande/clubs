@@ -55,7 +55,7 @@ export const CreatePostWidget: React.FC = () => {
               required
             >
               <option value="" disabled>Select organization to post as...</option>
-              {ledOrganizations.map((org) => (
+              {Array.isArray(ledOrganizations) && ledOrganizations.map((org) => (
                 <option key={`${org.type}:${org.id}`} value={`${org.type}:${org.id}`}>
                   {org.role} - {org.type}
                 </option>

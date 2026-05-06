@@ -67,7 +67,14 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
               {post.organization?.name || 'Unknown Organization'}
             </Link>
             <span>•</span>
-            <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+            <span>
+              {(() => {
+                const date = new Date(post.created_at);
+                return !isNaN(date.getTime()) 
+                  ? formatDistanceToNow(date, { addSuffix: true }) 
+                  : 'Just now';
+              })()}
+            </span>
           </div>
         </div>
       </div>
@@ -76,7 +83,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <p className="text-slate-800 dark:text-white/80 mb-4 whitespace-pre-wrap">{post.content}</p>
 
       {/* Media */}
-      {post.media && post.media.length > 0 && (
+      {Array.isArray(post.media) && post.media.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mb-4 rounded-xl overflow-hidden">
           {post.media.slice(0, 4).map((media) => (
             <div key={media.id} className="aspect-square bg-slate-100 dark:bg-white/5">

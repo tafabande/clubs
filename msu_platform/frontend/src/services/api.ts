@@ -2,6 +2,7 @@
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL, API_TIMEOUT, STORAGE_KEYS } from '@/utils/constants';
+import { logger } from '@/utils/logger';
 import type { ApiError } from '@/types';
 
 // Create axios instance
@@ -21,6 +22,7 @@ api.interceptors.request.use(
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+    logger.api.request(config);
     return config;
   },
   (error: AxiosError) => {
@@ -30,7 +32,10 @@ api.interceptors.request.use(
 
 // Response interceptor - Handle errors and token refresh
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    logger.api.response(response);
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
@@ -73,7 +78,7 @@ api.interceptors.response.use(
       }
     }
 
-    console.error('API Error:', error.response?.status, error.response?.data || error.message);
+    logger.api.error(error);
     return Promise.reject(error);
   }
 );

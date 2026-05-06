@@ -42,7 +42,7 @@ const OrgLeaderDashboard: React.FC = () => {
         </div>
 
         <div className="space-y-8">
-          {data.organizations?.map((org: any) => (
+          {Array.isArray(data.organizations) && data.organizations.map((org: any) => (
             <div key={org.id} className="glass-dark rounded-2xl p-6 hover:border-msu-gold/30 border border-white/5 transition-all">
               {/* Org Header */}
               <div className="flex items-center justify-between mb-6">
@@ -102,7 +102,7 @@ const OrgLeaderDashboard: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-bold text-white/60 uppercase mb-3">Recent Posts</h3>
                   <div className="space-y-2">
-                    {org.recent_posts.map((post: any, i: number) => (
+                    {Array.isArray(org.recent_posts) && org.recent_posts.map((post: any, i: number) => (
                       <div key={post.id || i} className="bg-white/5 rounded-lg p-3 flex justify-between items-center">
                         <div>
                           <div className="text-white/80 text-sm font-medium">{post.title || 'Untitled'}</div>

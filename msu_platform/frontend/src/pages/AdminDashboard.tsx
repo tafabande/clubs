@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {recent_audit?.map((log: any, i: number) => (
+                {Array.isArray(recent_audit) && recent_audit.map((log: any, i: number) => (
                   <tr key={log.id || i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${

@@ -73,7 +73,7 @@ const ModeratorDashboard: React.FC = () => {
           <div className="lg:col-span-2">
             <h2 className="text-lg font-bold text-white/80 mb-4 uppercase tracking-wider">Recent Posts</h2>
             <div className="space-y-3">
-              {recent_posts?.map((post: any, i: number) => (
+              {Array.isArray(recent_posts) && recent_posts.map((post: any, i: number) => (
                 <div key={post.id || i} className="glass-dark rounded-xl p-4 hover:bg-white/5 transition-colors">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -109,7 +109,7 @@ const ModeratorDashboard: React.FC = () => {
           <div>
             <h2 className="text-lg font-bold text-white/80 mb-4 uppercase tracking-wider">Security Alerts</h2>
             <div className="space-y-3">
-              {recent_security?.map((evt: any, i: number) => (
+              {Array.isArray(recent_security) && recent_security.map((evt: any, i: number) => (
                 <div key={evt.id || i} className="glass-dark rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`w-2 h-2 rounded-full ${

@@ -41,7 +41,13 @@ const ProfilePage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>
-                    Joined {formatDistanceToNow(new Date(user.date_joined || user.created_at), { addSuffix: true })}
+                    {(() => {
+                      const joinDate = user.date_joined || user.created_at;
+                      if (!joinDate) return 'Joined: N/A';
+                      const dateObj = new Date(joinDate);
+                      if (isNaN(dateObj.getTime())) return 'Joined: N/A';
+                      return `Joined ${formatDistanceToNow(dateObj, { addSuffix: true })}`;
+                    })()}
                   </span>
                 </div>
               </div>

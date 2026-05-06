@@ -50,7 +50,7 @@ class Command(BaseCommand):
                         'tags': club.tags if hasattr(club, 'tags') else '',
                         'is_active': club.is_active,
                         'is_approved': club.is_approved,
-                        'member_count': club.clubmembership_set.count()
+                        'member_count': club.memberships.count()
                     }
                 )
                 stats['clubs'] += 1
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                         'tags': church.tags if hasattr(church, 'tags') else '',
                         'is_active': church.is_active,
                         'is_approved': church.is_approved,
-                        'member_count': church.churchmembership_set.count()
+                        'member_count': church.memberships.count()
                     }
                 )
                 stats['churches'] += 1
@@ -82,11 +82,11 @@ class Command(BaseCommand):
                     defaults={
                         'name': team.name,
                         'description': team.description or '',
-                        'category': team.sport,
+                        'category': team.sport_type,
                         'tags': team.tags if hasattr(team, 'tags') else '',
                         'is_active': team.is_active,
                         'is_approved': team.is_approved,
-                        'member_count': team.sportsteammembership_set.count()
+                        'member_count': team.memberships.count()
                     }
                 )
                 stats['sports_teams'] += 1
@@ -104,7 +104,7 @@ class Command(BaseCommand):
                         'tags': activity.tags if hasattr(activity, 'tags') else '',
                         'is_active': activity.is_active,
                         'is_approved': activity.is_approved,
-                        'member_count': activity.activityregistration_set.count()
+                        'member_count': activity.registrations.count()
                     }
                 )
                 stats['activities'] += 1

@@ -525,7 +525,7 @@ class Command(BaseCommand):
                 category=club.category,
                 is_active=club.is_active,
                 is_approved=club.is_approved,
-                member_count=club.clubmembership_set.count()
+                member_count=club.memberships.count()
             )
 
         for church in churches:
@@ -537,7 +537,7 @@ class Command(BaseCommand):
                 category=church.denomination,
                 is_active=church.is_active,
                 is_approved=church.is_approved,
-                member_count=church.churchmembership_set.count()
+                member_count=church.memberships.count()
             )
 
         for team in teams:
@@ -549,7 +549,7 @@ class Command(BaseCommand):
                 category=team.sport_type,
                 is_active=team.is_active,
                 is_approved=team.is_approved,
-                member_count=team.sportsteammembership_set.count()
+                member_count=team.memberships.count()
             )
 
         for activity in activities:
@@ -561,7 +561,7 @@ class Command(BaseCommand):
                 category=activity.activity_type,
                 is_active=activity.is_active,
                 is_approved=activity.is_approved,
-                member_count=activity.activityregistration_set.count()
+                member_count=activity.registrations.count()
             )
 
         self.stdout.write(self.style.SUCCESS(f'✅ Populated search index'))

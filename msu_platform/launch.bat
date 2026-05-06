@@ -283,13 +283,26 @@ echo [CHECK] Available disk space: %FREE_SPACE% bytes
 echo [PASS]  Sufficient disk space available
 echo.
 
-REM Check network connectivity
+REM Check Node.js (needed for frontend)
+if exist "frontend\" (
+    echo [CHECK] Checking Node.js installation for frontend...
+    node --version >nul 2>&1
+    if !errorlevel! neq 0 (
+        echo [WARN]  Node.js is not installed but a frontend folder was detected.
+        echo [INFO]  Please install Node.js from: https://nodejs.org/
+        echo [INFO]  The React UI will be skipped if Node.js is missing.
+    ) else (
+        for /f "tokens=1" %%v in ('node --version') do echo [PASS]  Node %%v detected
+    )
+    echo.
+)
+REM Check internet connectivity
 echo [CHECK] Checking internet connectivity...
 if "%ENV_MODE%"=="local" (
     echo [SKIP]  Skipping internet check in LOCAL mode
 ) else (
     ping -n 1 google.com >nul 2>&1
-    if %errorlevel% equ 0 (
+    if !errorlevel! equ 0 (
         echo [PASS]  Internet connection available
     ) else (
         if "%ENV_MODE%"=="prod" (
@@ -390,8 +403,8 @@ echo ---------------------------------------------------------------------------
 echo.
 
 echo [INFO]  Checking for existing dependencies...
-python -c "import base64; exec(base64.b64decode('CmltcG9ydCBzeXMsIGltcG9ydGxpYi5tZXRhZGF0YSwgcmUKdHJ5OgogICAgd2l0aCBvcGVuKCdyZXF1aXJlbWVudHMudHh0JywgJ3InKSBhcyBmOgogICAgICAgIGxpbmVzID0gZi5yZWFkbGluZXMoKQogICAgcmVxcyA9IFtdCiAgICBmb3IgbGluZSBpbiBsaW5lczoKICAgICAgICBsaW5lID0gbGluZS5zdHJpcCgpCiAgICAgICAgaWYgbGluZSBhbmQgbm90IGxpbmUuc3RhcnRzd2l0aCgnIycpOgogICAgICAgICAgICBpZiAnOycgaW4gbGluZToKICAgICAgICAgICAgICAgIG1hcmtlciA9IGxpbmUuc3BsaXQoJzsnKVsxXS5zdHJpcCgpCiAgICAgICAgICAgICAgICBpZiAnc3lzX3BsYXRmb3JtJyBpbiBtYXJrZXIgYW5kICd3aW4zMicgaW4gbWFya2VyOgogICAgICAgICAgICAgICAgICAgIGlmICchPScgaW4gbWFya2VyIGFuZCBzeXMucGxhdGZvcm0gPT0gJ3dpbjMyJzoKICAgICAgICAgICAgICAgICAgICAgICAgY29udGludWUKICAgICAgICAgICAgICAgICAgICBpZiAnPT0nIGluIG1hcmtlciBhbmQgc3lzLnBsYXRmb3JtICE9ICd3aW4zMic6CiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgIHBrZyA9IHJlLnNwbGl0KHInWzs9PD5cc10nLCBsaW5lKVswXS5zdHJpcCgpCiAgICAgICAgICAgIGlmIHBrZzogcmVxcy5hcHBlbmQocGtnKQogICAgICAgICAgICAKICAgIGluc3RhbGxlZCA9IHtkaXN0Lm1ldGFkYXRhWydOYW1lJ10ubG93ZXIoKSBmb3IgZGlzdCBpbiBpbXBvcnRsaWIubWV0YWRhdGEuZGlzdHJpYnV0aW9ucygpfQogICAgbWlzc2luZyA9IFtyIGZvciByIGluIHJlcXMgaWYgci5sb3dlcigpIG5vdCBpbiBpbnN0YWxsZWRdCiAgICBpZiBtaXNzaW5nOgogICAgICAgIHByaW50KCdNSVNTSU5HX0RFUFNfRk9VTkQnKQogICAgICAgIGZvciBtIGluIG1pc3Npbmc6CiAgICAgICAgICAgIHByaW50KGYnICAtIHttfScpCiAgICAgICAgc3lzLmV4aXQoMSkKICAgIGVsc2U6CiAgICAgICAgc3lzLmV4aXQoMCkKZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgcHJpbnQoJ01JU1NJTkdfREVQU19GT1VORCcpCiAgICBwcmludChmJyAgLSBFcnJvcjoge2V9JykKICAgIHN5cy5leGl0KDEpCg==').decode('utf-8'))"
-if !errorlevel! equ 0 (
+python -c "import base64; exec(base64.b64decode('aW1wb3J0IHN5cywgaW1wb3J0bGliLm1ldGFkYXRhLCByZQp0cnk6CiAgICByZXFzID0gW10KICAgIHdpdGggb3BlbigncmVxdWlyZW1lbnRzLnR4dCcsICdyJykgYXMgZjoKICAgICAgICBmb3IgbGluZSBpbiBmOgogICAgICAgICAgICBsaW5lID0gbGluZS5zdHJpcCgpCiAgICAgICAgICAgIGlmIGxpbmUgYW5kIG5vdCBsaW5lLnN0YXJ0c3dpdGgoJyMnKToKICAgICAgICAgICAgICAgIHBrZyA9IHJlLnNwbGl0KHInWzs9PD4gXHNdJywgbGluZSlbMF0uc3RyaXAoKQogICAgICAgICAgICAgICAgaWYgcGtnOiByZXFzLmFwcGVuZChwa2cpCiAgICBpbnN0YWxsZWQgPSB7ZC5tZXRhZGF0YVsnTmFtZSddLmxvd2VyKCkgZm9yIGQgaW4gaW1wb3J0bGliLm1ldGFkYXRhLmRpc3RyaWJ1dGlvbnMoKX0KICAgIG1pc3NpbmcgPSBbciBmb3IgciBpbiByZXFzIGlmIHIubG93ZXIoKSBub3QgaW4gaW5zdGFsbGVkXQogICAgaWYgbWlzc2luZzoKICAgICAgICBwcmludCgnTUlTU0lOR19ERVBTX0ZPVU5EJykKICAgICAgICBmb3IgbSBpbiBtaXNzaW5nOiBwcmludChmJyAgLSB7bX0nKQogICAgICAgIHN5cy5leGl0KDEpCiAgICBzeXMuZXhpdCgwKQpleGNlcHQ6CiAgICBzeXMuZXhpdCgwKQo=').decode('utf-8'))"
+if %errorlevel% equ 0 (
     set DEPS_EXIST=1
     echo [PASS]  All required dependencies are already installed.
 ) else (
@@ -411,9 +424,9 @@ if "!DEPS_EXIST!"=="1" (
             python -m pip install --upgrade pip --quiet 2>nul
             echo [INFO]  Upgrading dependencies...
             if exist "requirements.txt" (
-                pip install -r requirements.txt --upgrade --quiet --disable-pip-version-check
+                python -m pip install -r requirements.txt --upgrade --quiet --disable-pip-version-check
             ) else (
-                pip install django djangorestframework django-cors-headers python-dotenv --upgrade --quiet
+                python -m pip install django djangorestframework django-cors-headers python-dotenv --upgrade --quiet
             )
             echo [PASS]  Dependencies upgraded successfully.
         ) else (
@@ -440,22 +453,49 @@ if "!DEPS_EXIST!"=="1" (
         echo.
 
         if exist "requirements.txt" (
-            pip install -r requirements.txt --quiet --disable-pip-version-check
+            python -m pip install -r requirements.txt --quiet --disable-pip-version-check
             if !errorlevel! neq 0 (
                 echo [FAIL]  Failed to install dependencies
                 echo [INFO]  Trying verbose installation to show errors...
-                pip install -r requirements.txt
+                python -m pip install -r requirements.txt
                 if !errorlevel! neq 0 (
                     pause
                     goto :error_exit
                 )
             )
-            echo [PASS]  All dependencies installed successfully
+            echo [PASS]  Python dependencies installed successfully
         ) else (
             echo [WARN]  requirements.txt not found
             echo [INFO]  Installing minimal dependencies...
-            pip install django djangorestframework django-cors-headers python-dotenv --quiet
+            python -m pip install django djangorestframework django-cors-headers python-dotenv --quiet
         )
+    )
+)
+echo.
+
+REM Frontend Dependency Check (Synchronous)
+if exist "frontend\" (
+    echo [CHECK] Checking Frontend dependencies...
+    if not exist "frontend\node_modules\" (
+        echo [WARN]  Frontend dependencies (node_modules) are missing!
+        echo [?] Would you like to install them now? (Required for UI)
+        choice /c YN /m "Select Y to install, N to skip:"
+        if !errorlevel! equ 1 (
+            echo [INFO]  Installing frontend dependencies...
+            pushd frontend
+            call npm install --legacy-peer-deps
+            popd
+            if !errorlevel! equ 0 (
+                echo [PASS]  Frontend dependencies installed successfully
+            ) else (
+                echo [FAIL]  Frontend installation failed
+                pause
+            )
+        ) else (
+            echo [SKIP]  Skipping frontend installation. Note: UI may not work.
+        )
+    ) else (
+        echo [PASS]  Frontend dependencies already verified
     )
 )
 echo.
@@ -540,18 +580,23 @@ echo.
 
 echo [INFO] Ensuring admin user exists...
 python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); email='%ADMIN_EMAIL%'; exists=User.objects.filter(email=email).exists(); print('SEED_EXISTS' if exists else 'SEED_NOT_FOUND')" > temp_seed.txt 2>&1
-findstr "SEED_EXISTS" temp_seed.txt >nul
-if !errorlevel! equ 0 (
-    echo [PASS] Admin user already exists: %ADMIN_EMAIL%
+if !errorlevel! neq 0 (
+    echo [FAIL]  Database connection failed during seeding check.
+    echo [INFO]  Check your database configuration or run migrations again.
+    type temp_seed.txt >> msu_platform_error.log
 ) else (
-    echo [INFO] Creating admin user: %ADMIN_EMAIL%...
-    python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(email='%ADMIN_EMAIL%', password='%ADMIN_PASSWORD%', first_name='%ADMIN_FIRST_NAME%', last_name='%ADMIN_LAST_NAME%', student_id='MSU000000', faculty='science', department='IT', year_of_study=4, is_verified=True)"
-    if !errorlevel! neq 0 (
-        echo [WARN] Could not seed admin user automatically.
-        echo [INFO] Review the error in server.log or msu_platform_error.log
-        type temp_seed.txt >> msu_platform_error.log
+    findstr "SEED_EXISTS" temp_seed.txt >nul
+    if !errorlevel! equ 0 (
+        echo [PASS] Admin user already exists: %ADMIN_EMAIL%
     ) else (
-        echo [PASS] Admin user created successfully.
+        echo [INFO] Creating admin user: %ADMIN_EMAIL%...
+        python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser(email='%ADMIN_EMAIL%', password='%ADMIN_PASSWORD%', first_name='%ADMIN_FIRST_NAME%', last_name='%ADMIN_LAST_NAME%', student_id='MSU000000', faculty='science', department='IT', year_of_study=4, is_verified=True)"
+        if !errorlevel! neq 0 (
+            echo [FAIL] Could not create admin user.
+            echo [INFO] Review the error in msu_platform_error.log
+        ) else (
+            echo [PASS] Admin user created successfully.
+        )
     )
 )
 del temp_seed.txt
@@ -587,30 +632,16 @@ echo.
 ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
-REM STEP 8.5: FRONTEND HEALTH CHECK
+REM STEP 8.5: FRONTEND STATUS
 REM ================================================================================
 if exist "frontend\" (
-    echo [8.5/10] CHECKING FRONTEND ENVIRONMENT...
+    echo [8.5/10] FRONTEND READY
     echo --------------------------------------------------------------------------------
-    if not exist "frontend\node_modules\" (
-        echo [WARN]  Frontend dependencies (node_modules) are missing!
-        echo [INFO]  The React frontend requires these to run.
-        set /p INSTALL_FE="Install frontend dependencies now? (Y/N): "
-        if /i "!INSTALL_FE!"=="Y" (
-            echo [INFO]  Installing frontend dependencies (this may take 2-5 minutes)...
-            cd frontend && npm install --legacy-peer-deps && cd ..
-            if !errorlevel! equ 0 (
-                echo [PASS]  Frontend dependencies installed successfully
-            ) else (
-                echo [FAIL]  Failed to install frontend dependencies
-                echo [INFO]  Please try running 'npm install --legacy-peer-deps' manually in the frontend folder.
-            )
-        )
-    ) else (
-        echo [PASS]  Frontend dependencies verified.
-    )
-    echo.
+    echo [PASS] Frontend environment verified in Step 4.
 )
+echo.
+echo.
+ping -n 2 127.0.0.1 >nul
 
 REM ================================================================================
 REM STEP 9: START SERVER

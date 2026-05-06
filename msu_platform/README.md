@@ -108,6 +108,28 @@ docker-compose exec web python manage.py populate_sample_data
 # Visit http://localhost
 ```
 
+### Docker (Local Development - Full Stack)
+
+This starts Postgres + Redis + Django API + Celery + the React frontend (hot reload).
+
+```bash
+cd msu_platform
+
+# Start the full dev stack
+docker compose -f docker-compose.dev.yml up -d --build
+
+# App (React)
+#   http://localhost:5173
+# API (Django)
+#   http://localhost:8000/api/
+
+# Stop containers
+docker compose -f docker-compose.dev.yml down
+
+# Reset containers + volumes (wipes Postgres data)
+docker compose -f docker-compose.dev.yml down -v
+```
+
 ### Local Development
 
 ```bash

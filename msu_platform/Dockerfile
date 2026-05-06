@@ -28,13 +28,16 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=config.settings.production
+    DJANGO_SETTINGS_MODULE=config.settings.production \
+    PATH=/home/appuser/.local/bin:$PATH
 
-# Install runtime dependencies including FFmpeg
+# Install runtime dependencies including FFmpeg and netcat
 RUN apt-get update && apt-get install -y \
     libpq5 \
     ffmpeg \
     libmagic1 \
+    netcat-openbsd \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -51,21 +54,21 @@ COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
 # Copy application code
 COPY --chown=appuser:appuser . .
 
-# Add local bin to PATH
-ENV PATH=/home/appuser/.local/bin:$PATH
+# Ensure entrypoint script is executable
+RUN chmod +x /app/scripts/docker-entrypoint.sh
 
 # Switch to non-root user
 USER appuser
 
-# Collect static files
-RUN python manage.py collectstatic --noinput --clear
-
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check using curl
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/api/health/', timeout=5)" || exit 1
+    CMD curl -f http://localhost:8000/api/health/ || exit 1
 
-# Run gunicorn
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]
+# Entrypoint handles migrations and static files
+ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]
+
+# Default command
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--timeout", "60"]

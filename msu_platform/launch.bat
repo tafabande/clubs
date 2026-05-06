@@ -84,12 +84,13 @@ goto :start_services
 
 :start_docker
 echo [INFO] Starting Docker services...
-docker-compose up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to start Docker services.
 ) else (
     echo [PASS] Docker services started.
-    echo Platform: http://localhost:8000
+    echo App: http://localhost:5173
+    echo API: http://localhost:8000/api
 )
 pause
 goto :master_menu

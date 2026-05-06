@@ -56,7 +56,47 @@ If the schema gets corrupted during development:
 If running in production or behind a web server, ensure static files are collected:
 - `python manage.py collectstatic --noinput --clear`
 
-## 3. Production Health Monitoring
+## 3. Docker Deployment
+
+The platform is fully containerized and can be deployed using Docker Compose. This is the recommended method for production.
+
+### Quick Start with Docker
+```powershell
+cd msu_platform
+docker compose up -d --build
+```
+
+### Dockerized Services
+- **nginx**: Entry point (Port 80/443). Serves the React frontend and proxies API requests.
+- **web**: Django Gunicorn server. Handles the business logic and API.
+- **frontend**: Build container for the React app.
+- **db**: PostgreSQL 15 database.
+- **redis**: Redis 7 for caching and task brokerage.
+- **celery_worker/beat**: Background task processing.
+
+### Using a Docker Registry
+
+The configuration supports pushing images to a private or public registry. You can specify the registry URL and image tag using environment variables.
+
+**Build and Tag for Registry:**
+```powershell
+$env:REGISTRY="your-registry.com/project/"
+$env:TAG="v1.0.0"
+docker compose build
+```
+
+**Push to Registry:**
+```powershell
+docker compose push
+```
+
+### Monitoring Docker Health
+Each service has a health check defined. You can monitor them using:
+```powershell
+docker compose ps
+```
+
+## 4. Production Health Monitoring
 
 For production environments, the platform exposes dedicated health check endpoints that monitor infrastructure status:
 - **Overall System Health:** `GET /health/detailed/`

@@ -18,8 +18,10 @@ export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.LOGIN, credentials);
 
-    // Store user data (tokens are in httpOnly cookies)
+    // Store user data and tokens
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
+    if (response.data.access) localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access);
+    if (response.data.refresh) localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refresh);
 
     return response.data;
   },
@@ -30,8 +32,10 @@ export const authService = {
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.REGISTER, userData);
 
-    // Store user data (tokens are in httpOnly cookies)
+    // Store user data and tokens
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
+    if (response.data.access) localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access);
+    if (response.data.refresh) localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refresh);
 
     return response.data;
   },
@@ -49,6 +53,8 @@ export const authService = {
     } finally {
       // Clear local user storage
       localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     }
   },
 

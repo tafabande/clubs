@@ -14,9 +14,13 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor - Add auth token to requests (handled by cookies now)
+// Request interceptor - Add auth token to requests (fallback for cookies)
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (accessToken && config.headers) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
     return config;
   },
   (error: AxiosError) => {
@@ -35,14 +39,30 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Try to refresh the token - refresh endpoint will read refresh_token from cookie
-        await axios.post(`${API_BASE_URL}/auth/refresh/`, {}, { withCredentials: true });
+        // Try to refresh the token
+        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, 
+          { refresh: refreshToken }, 
+          { withCredentials: true }
+        );
 
-        // Retry the original request (it will now send the new access_token cookie)
+        const { access, refresh } = response.data;
+        
+        // Update local storage
+        if (access) localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access);
+        if (refresh) localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh);
+
+        // Retry the original request with new token
+        if (access && originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${access}`;
+        }
         return api(originalRequest);
       } catch (refreshError) {
         // Refresh failed - Clear user data from localStorage and redirect
+        console.error('Token refresh failed, redirecting to login:', refreshError);
         localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
 
         // Redirect to login
         if (window.location.pathname !== '/login') {
@@ -53,6 +73,7 @@ api.interceptors.response.use(
       }
     }
 
+    console.error('API Error:', error.response?.status, error.response?.data || error.message);
     return Promise.reject(error);
   }
 );

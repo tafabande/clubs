@@ -96,7 +96,9 @@ def login(request):
         user.save(update_fields=['last_login'])
 
         response = Response({
-            'user': UserSerializer(user).data
+            'user': UserSerializer(user).data,
+            'access': access_token,
+            'refresh': refresh_token
         }, status=status.HTTP_200_OK)
 
         # Set cookies
@@ -105,16 +107,16 @@ def login(request):
             access_token,
             httponly=True,
             secure=not settings.DEBUG,
-            samesite='Lax',
-            max_age=15 * 60  # 15 minutes
+            samesite='Lax' if not settings.DEBUG else None,
+            max_age=15 * 60
         )
         response.set_cookie(
             'refresh_token',
             refresh_token,
             httponly=True,
             secure=not settings.DEBUG,
-            samesite='Lax',
-            max_age=7 * 24 * 60 * 60  # 7 days
+            samesite='Lax' if not settings.DEBUG else None,
+            max_age=7 * 24 * 60 * 60
         )
 
         return response
@@ -274,7 +276,6 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         if response.status_code == 200:
             access_token = response.data.get('access')
-            # If refresh token is rotated
             new_refresh_token = response.data.get('refresh')
 
             response.set_cookie(
@@ -282,7 +283,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                 access_token,
                 httponly=True,
                 secure=not settings.DEBUG,
-                samesite='Lax',
+                samesite='Lax' if not settings.DEBUG else None,
                 max_age=15 * 60
             )
 
@@ -292,14 +293,15 @@ class CookieTokenRefreshView(TokenRefreshView):
                     new_refresh_token,
                     httponly=True,
                     secure=not settings.DEBUG,
-                    samesite='Lax',
+                    samesite='Lax' if not settings.DEBUG else None,
                     max_age=7 * 24 * 60 * 60
                 )
             
-            # Remove tokens from response body for security
-            if 'access' in response.data:
-                del response.data['access']
-            if 'refresh' in response.data:
-                del response.data['refresh']
+            # Keep tokens in response body for fallback
+            # (Don't delete them if we want the frontend to use them)
+            # if 'access' in response.data:
+            #     del response.data['access']
+            # if 'refresh' in response.data:
+            #     del response.data['refresh']
 
         return response

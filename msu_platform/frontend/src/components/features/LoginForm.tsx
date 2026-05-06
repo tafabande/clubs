@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks';
 import { Button, Input } from '@/components/ui';
 import { getErrorMessage } from '@/services';

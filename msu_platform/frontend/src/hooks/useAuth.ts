@@ -12,19 +12,23 @@ export const useAuth = () => {
   const {
     data: user,
     isLoading,
+    isFetching,
     error,
   } = useQuery({
     queryKey: [QUERY_KEYS.ME],
     queryFn: () => authService.getCurrentUser(),
     enabled: authService.isAuthenticated(),
     retry: false,
-    staleTime: Infinity, // Don't refetch user data automatically
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const isUserAuthenticated = !!user || authService.isAuthenticated();
 
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
     onSuccess: (data) => {
+      // Immediate update to cache
       queryClient.setQueryData([QUERY_KEYS.ME], data.user);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATIONS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
@@ -49,9 +53,10 @@ export const useAuth = () => {
   });
 
   return {
-    user: user ?? null,
-    isLoading,
-    isAuthenticated: !!user,
+    user: user ?? authService.getStoredUser() ?? null,
+    isLoading: isLoading && authService.isAuthenticated() && !user,
+    isAuthenticated: isUserAuthenticated,
+    isFetching,
     error,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,

@@ -101,7 +101,7 @@ export const LoginForm: React.FC = () => {
           <input type="checkbox" className="w-4 h-4 rounded bg-white/5 border-white/10 checked:bg-msu-gold" />
           Remember Me
         </label>
-        <Link to="/forgot-password" size="sm" className="text-msu-gold hover:text-white transition-colors">
+        <Link to="/forgot-password" className="text-msu-gold hover:text-white transition-colors">
           Forgot Password?
         </Link>
       </div>

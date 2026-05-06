@@ -5,7 +5,7 @@ import { useAuth, useRoles, useCreatePost } from '@/hooks';
 
 export const CreatePostWidget: React.FC = () => {
   const { user } = useAuth();
-  const { ledOrganizations, isOrgLeader, isAdmin } = useRoles();
+  const { ledOrganizations, isAdmin } = useRoles();
   const createPost = useCreatePost();
   
   const [content, setContent] = useState('');

@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
   POST_LIKE: (id: number) => `/orgs/posts/${id}/like/`,
   POST_UNLIKE: (id: number) => `/orgs/posts/${id}/unlike/`,
   POST_COMMENTS: (id: number) => `/orgs/posts/${id}/comments/`,
+  ORGANIZATION_POSTS: (type: string, id: number) => `/orgs/${type}/${id}/posts/`,
 
   // Activities / Events (Base path /api/orgs/activities/)
   EVENTS: '/orgs/activities/',

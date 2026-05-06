@@ -1,14 +1,16 @@
 // Organization Detail Page Component
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Users, Calendar, Mail, Phone } from 'lucide-react';
 import { Layout } from '@/components/layout';
 import { Card, Spinner, Button, Badge } from '@/components/ui';
 import { PostCard } from '@/components/features';
-import { useOrganization, useOrganizationPosts, useJoinOrganization, useLeaveOrganization } from '@/hooks';
+import { useAuth, useOrganization, useOrganizationPosts, useJoinOrganization, useLeaveOrganization } from '@/hooks';
 
 const OrganizationDetailPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { type, id } = useParams<{ type: string; id: string }>();
   const organizationId = parseInt(id || '0', 10);
   const organizationType = type || 'club';
@@ -19,6 +21,10 @@ const OrganizationDetailPage: React.FC = () => {
   const leaveMutation = useLeaveOrganization();
 
   const handleJoinLeave = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     try {
       if (organization?.is_member) {
         await leaveMutation.mutateAsync({ type: organizationType, id: organizationId });
@@ -29,6 +35,7 @@ const OrganizationDetailPage: React.FC = () => {
       console.error('Failed to join/leave organization:', error);
     }
   };
+
 
 
   if (isLoading) {
@@ -53,7 +60,7 @@ const OrganizationDetailPage: React.FC = () => {
     );
   }
 
-  const posts = postsData?.results || [];
+  const posts = Array.isArray(postsData?.results) ? postsData.results : [];
 
   return (
     <Layout>
@@ -89,7 +96,7 @@ const OrganizationDetailPage: React.FC = () => {
             <h1 className="text-4xl font-black mb-2">{organization.name}</h1>
             <div className="flex items-center gap-4 mb-4">
               <Badge>{organization.organization_type}</Badge>
-              {organization.is_member && <Badge variant="success">Member</Badge>}
+              {isAuthenticated && organization.is_member && <Badge variant="success">Member</Badge>}
             </div>
             <p className="text-white/60 mb-4">{organization.description}</p>
             <div className="flex items-center gap-4 text-sm text-white/40">

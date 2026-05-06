@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Layout } from '@/components/layout';
-import { Button } from '@/components/ui';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -169,29 +168,34 @@ const HomePage: React.FC = () => {
               icon: Users,
               title: 'Clubs & Socs',
               desc: 'Join academic, social and interest-based clubs.',
-              color: 'text-blue-500'
+              color: 'text-blue-500',
+              link: '/organizations'
             },
             {
               icon: Calendar,
               title: 'Campus Events',
               desc: 'Never miss an event on the Gweru campus.',
-              color: 'text-msu-gold'
+              color: 'text-msu-gold',
+              link: '/organizations'
             },
             {
               icon: MessageSquare,
               title: 'Social Feed',
               desc: 'Share your moments with fellow students.',
-              color: 'text-green-500'
+              color: 'text-green-500',
+              link: '/dashboard'
             },
             { 
               icon: Search, 
               title: 'Fast Discovery', 
-              desc: 'Find organizations using full-text search.',
-              color: 'text-purple-500'
+              desc: 'Find societies using full-text search.',
+              color: 'text-purple-500',
+              link: '/organizations'
             },
           ].map((feature, i) => (
             <motion.div
               key={i}
+              onClick={() => navigate(feature.link)}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

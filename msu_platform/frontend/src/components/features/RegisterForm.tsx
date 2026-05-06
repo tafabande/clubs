@@ -1,7 +1,7 @@
 // Register Form Component
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import { Button, Input } from '@/components/ui';

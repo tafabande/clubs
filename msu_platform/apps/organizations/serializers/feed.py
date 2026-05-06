@@ -49,8 +49,7 @@ class PostSerializer(serializers.ModelSerializer):
     """Serializer for organization posts."""
 
     author = UserSerializer(read_only=True)
-    organization_name = serializers.CharField(read_only=True)
-    organization_type = serializers.CharField(read_only=True)
+    organization = serializers.SerializerMethodField()
     media = PostMediaSerializer(many=True, read_only=True)
     user_has_liked = serializers.SerializerMethodField()
     user_has_shared = serializers.SerializerMethodField()
@@ -59,7 +58,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'author', 'organization_name', 'organization_type',
+            'id', 'author', 'organization',
             'content_type', 'object_id', 'post_type', 'title', 'content',
             'image', 'video', 'media', 'event_date', 'event_location',
             'event_link', 'visibility', 'is_pinned', 'likes_count',
@@ -68,10 +67,20 @@ class PostSerializer(serializers.ModelSerializer):
             'updated_at'
         ]
         read_only_fields = [
-            'id', 'author', 'organization_name', 'organization_type',
-            'likes_count', 'comments_count', 'shares_count', 'created_at',
-            'updated_at'
+            'id', 'author', 'likes_count', 'comments_count', 
+            'shares_count', 'created_at', 'updated_at'
         ]
+
+    def get_organization(self, obj):
+        """Return organization details."""
+        org = obj.organization
+        if not org:
+            return None
+        return {
+            'id': str(org.id),
+            'name': org.name,
+            'type': obj.organization_type
+        }
 
     def get_user_has_liked(self, obj):
         """Check if current user has liked this post."""

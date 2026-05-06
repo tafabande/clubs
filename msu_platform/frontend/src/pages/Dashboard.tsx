@@ -23,7 +23,7 @@ const DashboardPage: React.FC = () => {
   if (!roleLoading && dashboard === 'moderator') return <Navigate to="/moderator" replace />;
   if (!roleLoading && dashboard === 'org_leader') return <Navigate to="/org-leader" replace />;
 
-  const { data: userData, isLoading: userLoading } = useQuery({
+  const { data: userData } = useQuery({
     queryKey: [QUERY_KEYS.DASHBOARD_USER],
     queryFn: async () => {
       const res = await apiClient.get(API_ENDPOINTS.DASHBOARD_USER);
@@ -34,7 +34,7 @@ const DashboardPage: React.FC = () => {
   const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfinitePosts({ ordering: '-created_at' });
 
-  const posts = data?.pages.flatMap((page) => page.results) || [];
+  const posts = data?.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []).filter(Boolean) || [];
 
   if (roleLoading) {
     return <Layout><div className="flex justify-center py-32"><Spinner size="lg" /></div></Layout>;
@@ -85,7 +85,7 @@ const DashboardPage: React.FC = () => {
                 <button
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  className="btn-secondary"
+                  className="btn-primary px-8 py-3 w-full max-w-xs mx-auto"
                 >
                   {isFetchingNextPage ? 'Loading...' : 'Load More'}
                 </button>
@@ -125,28 +125,30 @@ const DashboardPage: React.FC = () => {
               <div className="glass-dark rounded-2xl p-6">
                 <h3 className="font-bold mb-4 text-msu-gold">Your Communities</h3>
                 <div className="space-y-2">
-                  {userData.memberships.clubs?.map((m: any) => (
+                  {Array.isArray(userData.memberships.clubs) && userData.memberships.clubs.map((m: any) => (
                     <div key={m.id} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg p-2">
                       <span>&#x1F3DB;</span>
                       <span className="text-white/80">{m.name}</span>
                       <span className="text-white/30 text-xs ml-auto">{m.position}</span>
                     </div>
                   ))}
-                  {userData.memberships.churches?.map((m: any) => (
+                  {Array.isArray(userData.memberships.churches) && userData.memberships.churches.map((m: any) => (
                     <div key={m.id} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg p-2">
                       <span>&#x26EA;</span>
                       <span className="text-white/80">{m.name}</span>
                       <span className="text-white/30 text-xs ml-auto">{m.ministry}</span>
                     </div>
                   ))}
-                  {userData.memberships.sports_teams?.map((m: any) => (
+                  {Array.isArray(userData.memberships.sports_teams) && userData.memberships.sports_teams.map((m: any) => (
                     <div key={m.id} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg p-2">
                       <span>&#x26BD;</span>
                       <span className="text-white/80">{m.name}</span>
                       <span className="text-white/30 text-xs ml-auto">{m.position}</span>
                     </div>
                   ))}
-                  {(!userData.memberships.clubs?.length && !userData.memberships.churches?.length && !userData.memberships.sports_teams?.length) && (
+                  {(!Array.isArray(userData.memberships.clubs) || userData.memberships.clubs.length === 0) &&
+                   (!Array.isArray(userData.memberships.churches) || userData.memberships.churches.length === 0) &&
+                   (!Array.isArray(userData.memberships.sports_teams) || userData.memberships.sports_teams.length === 0) && (
                     <p className="text-white/30 text-sm text-center py-2">No communities joined yet</p>
                   )}
                 </div>

@@ -2,6 +2,10 @@
 
 export * from './api';
 
+// Re-import from api for local use in this file
+import type { User as ApiUser } from './api';
+import type { RegisterRequest as ApiRegisterRequest } from './api';
+
 // ============================================================================
 // Component Props Types
 // ============================================================================
@@ -59,15 +63,40 @@ export interface RouteConfig {
 }
 
 // ============================================================================
+// Auth Context Types (used by AuthContext.tsx)
+// ============================================================================
+
+export interface AuthState {
+  user: ApiUser | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterCredentials {
+  email: string;
+  student_id: string;
+  password: string;
+  password_confirm: string;
+  first_name: string;
+  last_name: string;
+}
+
+// ============================================================================
 // Context Types
 // ============================================================================
 
 export interface AuthContextType {
-  user: User | null;
+  user: ApiUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: ApiRegisterRequest) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
 }
@@ -79,6 +108,3 @@ export interface AppContextType {
   removeToast: (id: string) => void;
   toasts: Toast[];
 }
-
-// Re-export specific types for convenience
-export type { User, Organization, Post, Event } from './api';

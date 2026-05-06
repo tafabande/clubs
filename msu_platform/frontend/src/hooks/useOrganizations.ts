@@ -96,7 +96,7 @@ export const useUpdateOrganization = () => {
   return useMutation({
     mutationFn: ({ type, id, data }: { type: OrganizationType | string; id: number; data: UpdateOrganizationRequest }) =>
       organizationsService.updateOrganization(type, id, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATIONS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION, variables.type, variables.id] });
     },
@@ -127,7 +127,7 @@ export const useJoinOrganization = () => {
   return useMutation({
     mutationFn: ({ type, id }: { type: OrganizationType | string; id: number }) => 
       organizationsService.joinOrganization(type, id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION, variables.type, variables.id] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATIONS] });
     },
@@ -143,7 +143,7 @@ export const useLeaveOrganization = () => {
   return useMutation({
     mutationFn: ({ type, id }: { type: OrganizationType | string; id: number }) => 
       organizationsService.leaveOrganization(type, id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATION, variables.type, variables.id] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ORGANIZATIONS] });
     },

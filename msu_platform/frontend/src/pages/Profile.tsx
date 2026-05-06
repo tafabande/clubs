@@ -20,16 +20,16 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-start gap-6 mb-8">
             <Avatar
               src={user.profile_picture}
-              alt={user.username}
+              alt={user.first_name}
               size="xl"
-              fallback={user.username?.[0]}
+              fallback={user.first_name?.[0]}
             />
 
             <div className="flex-1">
               <h1 className="text-3xl font-black mb-1">
                 {user.first_name} {user.last_name}
               </h1>
-              <p className="text-white/60 mb-4">@{user.username}</p>
+              <p className="text-white/60 mb-4">@{user.username || user.email}</p>
 
               {user.bio && <p className="text-white/80 mb-4">{user.bio}</p>}
 
@@ -41,7 +41,7 @@ const ProfilePage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>
-                    Joined {formatDistanceToNow(new Date(user.date_joined), { addSuffix: true })}
+                    Joined {formatDistanceToNow(new Date(user.date_joined || user.created_at), { addSuffix: true })}
                   </span>
                 </div>
               </div>

@@ -17,8 +17,8 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'card',
-        hover && 'cursor-pointer hover:scale-[1.02] transition-transform',
+        'glass dark:glass-dark rounded-3xl p-6 md:p-8',
+        hover && 'cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all duration-300',
         className
       )}
       {...props}

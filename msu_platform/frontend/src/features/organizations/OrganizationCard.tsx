@@ -9,9 +9,9 @@ interface OrganizationCardProps {
 const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization }) => {
   return (
     <div className="overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
-      {organization.banner && (
+      {organization.cover_photo && (
         <img
-          src={organization.banner}
+          src={organization.cover_photo}
           alt={organization.name}
           className="h-32 w-full object-cover"
         />

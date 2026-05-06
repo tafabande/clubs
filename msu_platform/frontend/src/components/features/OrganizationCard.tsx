@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Calendar, ArrowUpRight, Heart } from 'lucide-react';
-import { Card, Badge } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import type { Organization, OrganizationType } from '@/types';
 
 interface OrganizationCardProps {
@@ -74,8 +74,8 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
           <div className="flex-1 min-w-0">
             <h3 className="text-xl font-black mb-1 truncate text-slate-900 dark:text-white group-hover:text-msu-blue dark:group-hover:text-msu-gold transition-colors">{organization.name}</h3>
             <div className="flex gap-2">
-              <Badge variant={typeColors[organization.organization_type] as any}>
-                {typeLabels[organization.organization_type]}
+              <Badge variant={typeColors[organization.organization_type as OrganizationType] as any}>
+                {typeLabels[organization.organization_type as OrganizationType]}
               </Badge>
               {organization.is_member && <Badge variant="success">Member</Badge>}
             </div>

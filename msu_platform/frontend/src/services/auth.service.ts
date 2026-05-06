@@ -7,8 +7,6 @@ import type {
   RegisterRequest,
   AuthResponse,
   User,
-  TokenRefreshRequest,
-  TokenRefreshResponse
 } from '@/types';
 
 export const authService = {

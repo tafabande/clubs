@@ -7,6 +7,7 @@
 export interface User {
   id: number;
   email: string;
+  username?: string;
   student_id: string;
   first_name: string;
   last_name: string;
@@ -19,6 +20,7 @@ export interface User {
   is_verified: boolean;
   created_at: string;
   updated_at: string;
+  date_joined?: string;
   last_login?: string;
 }
 
@@ -32,12 +34,14 @@ export interface UserProfile extends User {
 // Organization Types
 // ============================================================================
 
-export enum OrganizationType {
-  CLUB = 'club',
-  CHURCH = 'church',
-  SPORTS_TEAM = 'sports_team',
-  ACTIVITY = 'activity',
-}
+export type OrganizationType = 'club' | 'church' | 'sports_team' | 'activity';
+
+export const OrganizationType = {
+  CLUB: 'club' as const,
+  CHURCH: 'church' as const,
+  SPORTS_TEAM: 'sports_team' as const,
+  ACTIVITY: 'activity' as const,
+};
 
 export interface BaseOrganization {
   id: number;
@@ -59,21 +63,21 @@ export interface BaseOrganization {
 }
 
 export interface Club extends BaseOrganization {
-  organization_type: OrganizationType.CLUB;
+  organization_type: 'club';
   club_type: 'academic' | 'social' | 'professional' | 'cultural' | 'other';
   meeting_schedule?: string;
   faculty?: string;
 }
 
 export interface Church extends BaseOrganization {
-  organization_type: OrganizationType.CHURCH;
+  organization_type: 'church';
   denomination?: string;
   service_times?: string;
   location?: string;
 }
 
 export interface SportsTeam extends BaseOrganization {
-  organization_type: OrganizationType.SPORTS_TEAM;
+  organization_type: 'sports_team';
   sport_name: string;
   coach?: string;
   training_schedule?: string;
@@ -81,7 +85,7 @@ export interface SportsTeam extends BaseOrganization {
 }
 
 export interface Activity extends BaseOrganization {
-  organization_type: OrganizationType.ACTIVITY;
+  organization_type: 'activity';
   activity_type: 'workshop' | 'seminar' | 'competition' | 'social' | 'other';
   start_date?: string;
   end_date?: string;
@@ -236,6 +240,7 @@ export interface PaginatedResponse<T> {
 export interface ApiError {
   detail?: string;
   message?: string;
+  code?: string;
   errors?: Record<string, string[]>;
   status?: number;
 }

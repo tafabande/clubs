@@ -1,10 +1,11 @@
 // Post Card Component
 
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageSquare, Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, Avatar, Button } from '@/components/ui';
-import { useTogglePostLike } from '@/hooks';
+import { useAuth, useTogglePostLike } from '@/hooks';
 import type { Post } from '@/types';
 
 interface PostCardProps {
@@ -13,8 +14,14 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const toggleLike = useTogglePostLike();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleLike = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     try {
       await toggleLike.mutateAsync({
         id: post.id,
@@ -25,25 +32,40 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `Post from ${post.organization.name}`,
+        text: post.content,
+        url: window.location.href,
+      }).catch(console.error);
+    }
+  };
+
   return (
-    <Card>
+    <Card hover className="mb-6">
       {/* Header */}
       <div className="flex items-start gap-4 mb-4">
         <Avatar
           src={post.author.profile_picture}
-          alt={post.author.username}
-          fallback={post.author.username?.[0]}
+          alt={post.author.first_name}
+          fallback={post.author.first_name?.[0]}
         />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="font-bold">
+            <h4 className="font-bold text-slate-900 dark:text-white">
               {post.author.first_name} {post.author.last_name}
             </h4>
-            <span className="text-white/40 text-sm">@{post.author.username}</span>
+            <span className="text-slate-500 dark:text-white/40 text-sm">@{post.author.username || post.author.email}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-white/40">
-            <span>{post.organization.name}</span>
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/40">
+            <Link 
+              to={`/organizations/${post.organization?.type || 'club'}/${post.organization?.id}`} 
+              className="hover:text-msu-gold transition-colors font-medium"
+            >
+              {post.organization?.name || 'Unknown Organization'}
+            </Link>
             <span>•</span>
             <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
           </div>
@@ -51,18 +73,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       </div>
 
       {/* Content */}
-      <p className="text-white/80 mb-4 whitespace-pre-wrap">{post.content}</p>
+      <p className="text-slate-800 dark:text-white/80 mb-4 whitespace-pre-wrap">{post.content}</p>
 
       {/* Media */}
       {post.media && post.media.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mb-4 rounded-xl overflow-hidden">
           {post.media.slice(0, 4).map((media) => (
-            <div key={media.id} className="aspect-square bg-white/5">
+            <div key={media.id} className="aspect-square bg-slate-100 dark:bg-white/5">
               {media.media_type === 'image' && (
                 <img
                   src={media.file_url}
                   alt={media.caption || 'Post media'}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
               )}
               {media.media_type === 'video' && (
@@ -79,23 +101,35 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-6 pt-4 border-t border-white/10">
+      <div className="flex items-center gap-6 pt-4 border-t border-slate-200 dark:border-white/10">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleLike}
-          className={post.is_liked ? 'text-red-500' : ''}
+          className={`hover:bg-red-500/10 ${post.is_liked ? 'text-red-500 hover:text-red-600' : 'text-slate-500 dark:text-white/50 hover:text-red-500'}`}
         >
-          <Heart size={18} fill={post.is_liked ? 'currentColor' : 'none'} />
-          <span>{post.likes_count}</span>
+          <Heart size={18} fill={post.is_liked ? 'currentColor' : 'none'} className="transition-transform active:scale-75" />
+          <span className="font-medium">{post.likes_count}</span>
         </Button>
 
-        <Button variant="ghost" size="sm">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => {
+            if (!isAuthenticated) navigate('/login');
+          }}
+          className="text-slate-500 dark:text-white/50 hover:text-msu-blue dark:hover:text-msu-gold hover:bg-msu-blue/10 dark:hover:bg-msu-gold/10"
+        >
           <MessageSquare size={18} />
-          <span>{post.comments_count}</span>
+          <span className="font-medium">{post.comments_count}</span>
         </Button>
 
-        <Button variant="ghost" size="sm">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={handleShare}
+          className="text-slate-500 dark:text-white/50 hover:text-msu-blue dark:hover:text-msu-gold hover:bg-msu-blue/10 dark:hover:bg-msu-gold/10 ml-auto"
+        >
           <Share2 size={18} />
         </Button>
       </div>

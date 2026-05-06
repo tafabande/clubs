@@ -84,7 +84,7 @@ export const useUpdatePost = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdatePostRequest }) =>
       postsService.updatePost(id, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POST, variables.id] });
     },
@@ -114,7 +114,7 @@ export const useTogglePostLike = () => {
   return useMutation({
     mutationFn: ({ id, isLiked }: { id: number; isLiked: boolean }) =>
       postsService.toggleLike(id, isLiked),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POST, variables.id] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
     },
@@ -130,7 +130,7 @@ export const useCreateComment = () => {
   return useMutation({
     mutationFn: ({ postId, data }: { postId: number; data: CreateCommentRequest }) =>
       postsService.createComment(postId, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.POST, variables.postId, 'comments']
       });

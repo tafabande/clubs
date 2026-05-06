@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Sparkles } from 'lucide-react';
 import { Layout } from '@/components/layout';
-import { Card, Spinner, Input, Badge } from '@/components/ui';
 import { OrganizationCard } from '@/components/features';
 import { useInfiniteOrganizations } from '@/hooks';
 import type { OrganizationType } from '@/types';
 
 const organizationTypes: { value: OrganizationType | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
-  { value: 'club', label: 'Clubs' },
+  { value: 'club', label: 'Clubs & Socs' },
   { value: 'church', label: 'Churches' },
   { value: 'sports_team', label: 'Sports Teams' },
   { value: 'activity', label: 'Activities' },
@@ -24,10 +23,10 @@ const OrganizationsPage: React.FC = () => {
     organization_type: selectedType !== 'all' ? selectedType : undefined,
   };
 
-  const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteOrganizations(filters);
 
-  const organizations = data?.pages.flatMap((page) => page.results) || [];
+  const organizations = data?.pages.flatMap((page) => Array.isArray(page?.results) ? page.results : []) || [];
 
   return (
     <Layout>
@@ -43,7 +42,7 @@ const OrganizationsPage: React.FC = () => {
             Explore Community
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter">
-            DISCOVER <span className="text-gradient">ORGANIZATIONS</span>
+            DISCOVER <span className="text-gradient">SOCIETIES</span>
           </h1>
           <p className="text-slate-500 dark:text-white/50 text-lg max-w-2xl font-medium">
             Join the most vibrant student communities at MSU. From academic clubs to sports teams, 
@@ -101,7 +100,7 @@ const OrganizationsPage: React.FC = () => {
               className="flex flex-col items-center justify-center py-32"
             >
               <div className="w-16 h-16 border-4 border-msu-gold/20 border-t-msu-gold rounded-full animate-spin mb-6" />
-              <p className="font-black text-slate-400 uppercase tracking-widest text-sm">Searching for tripes...</p>
+              <p className="font-black text-slate-400 uppercase tracking-widest text-sm">Searching for societies...</p>
             </motion.div>
           ) : organizations.length === 0 ? (
             <motion.div
@@ -112,7 +111,7 @@ const OrganizationsPage: React.FC = () => {
               <div className="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search size={40} className="text-slate-300 dark:text-white/20" />
               </div>
-              <h3 className="text-2xl font-black mb-2">No organizations found</h3>
+              <h3 className="text-2xl font-black mb-2">No societies found</h3>
               <p className="text-slate-500 dark:text-white/40 font-medium">Try adjusting your filters or search terms.</p>
             </motion.div>
           ) : (
@@ -120,7 +119,7 @@ const OrganizationsPage: React.FC = () => {
               layout
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              {organizations.map((org, index) => (
+              {organizations.map((org) => (
                 <OrganizationCard key={org.id} organization={org} />
               ))}
             </motion.div>
@@ -136,7 +135,7 @@ const OrganizationsPage: React.FC = () => {
               disabled={isFetchingNextPage}
               className="px-12 py-4 bg-msu-blue dark:bg-white/10 text-white font-black rounded-2xl shadow-xl shadow-msu-blue/20 hover:shadow-msu-blue/40 transition-all disabled:opacity-50"
             >
-              {isFetchingNextPage ? 'Loading more...' : 'Load More Organizations'}
+              {isFetchingNextPage ? 'Loading more...' : 'Load More Societies'}
             </motion.button>
           </div>
         )}

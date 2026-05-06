@@ -1,5 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Calendar, ArrowUpRight } from 'lucide-react';
+import { Users, Calendar, ArrowUpRight, Heart } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
 import type { Organization, OrganizationType } from '@/types';
 
@@ -87,14 +88,18 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/30">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/30">
+          <div className="flex items-center gap-1.5">
             <Users size={14} className="text-msu-gold" />
-            <span>{organization.members_count} members</span>
+            <span>{organization.members_count}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Heart size={14} className="text-red-500" />
+            <span>{organization.followers_count}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
             <Calendar size={14} className="text-msu-blue" />
-            <span>{organization.posts_count} posts</span>
+            <span>{organization.posts_count}</span>
           </div>
         </div>
       </div>

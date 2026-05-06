@@ -17,6 +17,7 @@ class BaseOrganization(models.Model):
     email = models.EmailField()
     website = models.URLField(blank=True)
     logo = models.ImageField(upload_to='organization_logos/', blank=True, null=True, validators=[validate_image_file])
+    categories = models.CharField(max_length=500, blank=True, help_text='Comma-separated tags for interest matching (e.g., technology, sports, prayer)')
 
     is_active = models.BooleanField(default=True)
     is_approved = models.BooleanField(default=False)
@@ -28,6 +29,12 @@ class BaseOrganization(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_%(class)ss')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Denormalized counts for performance
+    members_count = models.IntegerField(default=0, help_text='Total active members')
+    followers_count = models.IntegerField(default=0, help_text='Total followers')
+    posts_count = models.IntegerField(default=0, help_text='Total posts')
+    events_count = models.IntegerField(default=0, help_text='Total upcoming events')
 
     class Meta:
         abstract = True

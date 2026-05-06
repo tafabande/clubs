@@ -90,6 +90,8 @@ class Post(models.Model):
     likes_count = models.IntegerField(default=0)
     comments_count = models.IntegerField(default=0)
     shares_count = models.IntegerField(default=0)
+    views_count = models.IntegerField(default=0)
+    reposts_count = models.IntegerField(default=0)
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)

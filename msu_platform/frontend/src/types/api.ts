@@ -6,13 +6,19 @@
 
 export interface User {
   id: number;
-  username: string;
   email: string;
+  student_id: string;
   first_name: string;
   last_name: string;
   profile_picture?: string;
   bio?: string;
-  date_joined: string;
+  interests?: string;
+  followers_count: number;
+  following_count: number;
+  organizations_following_count: number;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
   last_login?: string;
 }
 
@@ -42,10 +48,13 @@ export interface BaseOrganization {
   cover_photo?: string;
   contact_email?: string;
   contact_phone?: string;
+  categories?: string;
   created_at: string;
   updated_at: string;
   members_count: number;
+  followers_count: number;
   posts_count: number;
+  events_count: number;
   is_member?: boolean;
 }
 

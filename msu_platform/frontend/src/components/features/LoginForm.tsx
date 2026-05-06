@@ -60,45 +60,60 @@ export const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {loginError && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <motion.div 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest"
+        >
           {getErrorMessage(loginError)}
-        </div>
+        </motion.div>
       )}
 
-      <Input
-        label="Email Address"
-        name="email"
-        type="email"
-        value={formData.email}
-        onChange={handleChange}
-        error={errors.email}
-        placeholder="Enter your email"
-        autoComplete="email"
-      />
+      <div className="space-y-5">
+        <Input
+          label="Email Address"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          error={errors.email}
+          placeholder="e.g. student@msu.edu"
+          autoComplete="email"
+          className="bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:border-msu-gold/50"
+        />
 
-      <Input
-        label="Password"
-        name="password"
-        type="password"
-        value={formData.password}
-        onChange={handleChange}
-        error={errors.password}
-        placeholder="Enter your password"
-        autoComplete="current-password"
-      />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          error={errors.password}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          className="bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:border-msu-gold/50"
+        />
+      </div>
 
-
-      <Button type="submit" className="w-full" isLoading={isLoggingIn}>
-        <LogIn size={20} />
-        Login
-      </Button>
-
-      <p className="text-center text-white/60 text-sm">
-        Don't have an account?{' '}
-        <Link to="/register" className="text-msu-gold hover:underline">
-          Register here
+      <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest">
+        <label className="flex items-center gap-2 text-slate-500 cursor-pointer hover:text-msu-gold transition-colors">
+          <input type="checkbox" className="w-4 h-4 rounded bg-white/5 border-white/10 checked:bg-msu-gold" />
+          Remember Me
+        </label>
+        <Link to="/forgot-password" size="sm" className="text-msu-gold hover:text-white transition-colors">
+          Forgot Password?
         </Link>
-      </p>
+      </div>
+
+      <Button 
+        type="submit" 
+        variant="gold" 
+        className="w-full py-6 text-lg shadow-xl shadow-msu-gold/20 hover:shadow-msu-gold/40 transition-all active:scale-[0.98]" 
+        isLoading={isLoggingIn}
+      >
+        <LogIn size={20} />
+        Sign In
+      </Button>
     </form>
   );
 };

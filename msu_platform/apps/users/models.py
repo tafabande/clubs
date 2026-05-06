@@ -89,6 +89,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     department = models.CharField(max_length=100, blank=True)
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, null=True, blank=True)
 
+    # Social Profile
+    bio = models.TextField(max_length=500, blank=True)
+    interests = models.CharField(max_length=500, blank=True, help_text='Comma-separated interests (e.g., coding, music, sports)')
+    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
+
     # Status fields
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -98,6 +103,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True, blank=True)
+
+    # Denormalized counts
+    followers_count_val = models.IntegerField(default=0, db_column='followers_count')
+    following_count_val = models.IntegerField(default=0, db_column='following_count')
+    posts_count = models.IntegerField(default=0)
 
     objects = UserManager()
 
@@ -131,13 +141,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def followers_count(self):
-        """Count of users following this user."""
-        return self.followers.count()
+        """Count of users following this user (denormalized)."""
+        return self.followers_count_val
 
     @property
     def following_count(self):
-        """Count of users this user is following."""
-        return self.following.count()
+        """Count of users this user is following (denormalized)."""
+        return self.following_count_val
 
     @property
     def organizations_following_count(self):

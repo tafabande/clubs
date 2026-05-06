@@ -4,16 +4,88 @@ Celery tasks for feed generation and management.
 from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
-from apps.organizations.models import Post, Feed
-from apps.organizations.feed_algorithm import (
-    calculate_relevance_score,
-    should_include_in_feed,
-    get_source_type
-)
-from apps.users.models import User
-import logging
+from apps.organizations.models import Post, Feed, UserFollowOrganization
+from apps.organizations.models.club import ClubMembership
+from apps.organizations.models.church import ChurchMembership
+from apps.organizations.models.sports import SportsTeamMembership
+from apps.organizations.models.activity import ActivityMembership
+from django.db.models import F
+from django.contrib.contenttypes.models import ContentType
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task
+def update_organization_counts(content_type_id: int, object_id: str):
+    """
+    Update counts for an organization.
+    """
+    try:
+        content_type = ContentType.objects.get_for_id(content_type_id)
+        model_class = content_type.model_class()
+        org = model_class.objects.get(id=object_id)
+        
+        # Calculate counts
+        org.followers_count = UserFollowOrganization.objects.filter(
+            content_type=content_type, 
+            object_id=object_id
+        ).count()
+        
+        # This is a bit tricky since memberships are in different models
+        # We'll need a way to sum them or check the specific model
+        if hasattr(org, 'memberships'):
+            org.members_count = org.memberships.filter(status='active').count()
+            
+        org.posts_count = Post.objects.filter(
+            content_type=content_type, 
+            object_id=object_id,
+            is_active=True
+        ).count()
+        
+        org.save(update_fields=['followers_count', 'members_count', 'posts_count'])
+        logger.info(f"Updated counts for {org.name}")
+        
+    except Exception as e:
+        logger.error(f"Error updating counts for org {object_id}: {e}")
+
+
+@shared_task
+def fan_out_post_to_followers(post_id: str):
+    """
+    Push a new post to all followers' feeds.
+    """
+    try:
+        post = Post.objects.get(id=post_id)
+        org = post.organization
+        
+        # Get all followers
+        followers = UserFollowOrganization.objects.filter(
+            content_type=post.content_type,
+            object_id=post.object_id
+        ).values_list('user_id', flat=True)
+        
+        # Also include members if they aren't already following
+        # For simplicity, we'll just iterate and create
+        # In production, use bulk_create
+        
+        feed_items = []
+        for user_id in followers:
+            feed_items.append(
+                Feed(
+                    user_id=user_id,
+                    post=post,
+                    source_type='following',
+                    relevance_score=80.0 # High initial score for followers
+                )
+            )
+            
+        Feed.objects.bulk_create(feed_items, ignore_conflicts=True)
+        logger.info(f"Fanned out post {post_id} to {len(feed_items)} followers")
+        
+    except Post.DoesNotExist:
+        logger.error(f"Post {post_id} not found for fan-out")
+    except Exception as e:
+        logger.error(f"Error in fan-out for post {post_id}: {e}")
 
 
 @shared_task

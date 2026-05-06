@@ -152,7 +152,18 @@ def calculate_relationship_score(user, post) -> float:
     # Bonus if user follows the post author
     from apps.users.models import UserFollow
     if UserFollow.objects.filter(follower=user, following=post.author).exists():
-        score = min(score + 20, 100)
+        score = min(score + 15, 100)
+
+    # Interest matching (Tag-based)
+    if user.interests and organization.categories:
+        user_tags = set(tag.strip().lower() for tag in user.interests.split(',') if tag.strip())
+        org_tags = set(tag.strip().lower() for tag in organization.categories.split(',') if tag.strip())
+        
+        matches = user_tags.intersection(org_tags)
+        if matches:
+            # Bonus of 5 points per match, up to 20
+            interest_bonus = min(len(matches) * 5, 20)
+            score = min(score + interest_bonus, 100)
 
     return round(score, 2)
 

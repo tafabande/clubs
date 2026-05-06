@@ -28,16 +28,17 @@ class ClubSerializer(serializers.ModelSerializer):
     """Serializer for Club model."""
     created_by = UserSerializer(read_only=True)
     faculty_advisor = UserSerializer(read_only=True)
-    member_count = serializers.IntegerField(read_only=True)
     user_membership = serializers.SerializerMethodField()
     
     class Meta:
         model = Club
         fields = [
             'id', 'name', 'description', 'email', 'website', 'logo',
-            'category', 'faculty_advisor', 'meeting_location', 'meeting_schedule',
+            'category', 'categories', 'faculty_advisor', 'meeting_location', 'meeting_schedule',
             'max_members', 'is_active', 'is_approved', 'approved_by', 'approved_at',
-            'created_by', 'created_at', 'updated_at', 'member_count', 'user_membership'
+            'created_by', 'created_at', 'updated_at', 
+            'members_count', 'followers_count', 'posts_count', 'events_count',
+            'user_membership'
         ]
         read_only_fields = ['id', 'is_approved', 'approved_by', 'approved_at', 'created_by', 'created_at', 'updated_at']
     
@@ -82,16 +83,17 @@ class ChurchMembershipSerializer(serializers.ModelSerializer):
 class ChurchSerializer(serializers.ModelSerializer):
     """Serializer for Church model."""
     created_by = UserSerializer(read_only=True)
-    member_count = serializers.IntegerField(read_only=True)
     user_membership = serializers.SerializerMethodField()
     
     class Meta:
         model = Church
         fields = [
             'id', 'name', 'description', 'email', 'website', 'logo',
-            'denomination', 'service_times', 'pastor_name', 'pastor_contact',
+            'denomination', 'categories', 'service_times', 'pastor_name', 'pastor_contact',
             'is_active', 'is_approved', 'approved_by', 'approved_at',
-            'created_by', 'created_at', 'updated_at', 'member_count', 'user_membership'
+            'created_by', 'created_at', 'updated_at', 
+            'members_count', 'followers_count', 'posts_count', 'events_count',
+            'user_membership'
         ]
         read_only_fields = ['id', 'is_approved', 'approved_by', 'approved_at', 'created_by', 'created_at', 'updated_at']
     
@@ -136,16 +138,17 @@ class SportsTeamMembershipSerializer(serializers.ModelSerializer):
 class SportsTeamSerializer(serializers.ModelSerializer):
     """Serializer for SportsTeam model."""
     created_by = UserSerializer(read_only=True)
-    member_count = serializers.IntegerField(read_only=True)
     user_membership = serializers.SerializerMethodField()
     
     class Meta:
         model = SportsTeam
         fields = [
             'id', 'name', 'description', 'email', 'website', 'logo',
-            'sport_type', 'division', 'coach', 'practice_schedule', 'max_roster_size',
+            'sport_type', 'categories', 'division', 'coach', 'practice_schedule', 'max_roster_size',
             'is_active', 'is_approved', 'approved_by', 'approved_at',
-            'created_by', 'created_at', 'updated_at', 'member_count', 'user_membership'
+            'created_by', 'created_at', 'updated_at', 
+            'members_count', 'followers_count', 'posts_count', 'events_count',
+            'user_membership'
         ]
         read_only_fields = ['id', 'is_approved', 'approved_by', 'approved_at', 'created_by', 'created_at', 'updated_at']
     
@@ -190,17 +193,18 @@ class ActivityRegistrationSerializer(serializers.ModelSerializer):
 class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for Activity model."""
     created_by = UserSerializer(read_only=True)
-    participant_count = serializers.IntegerField(read_only=True)
     user_registration = serializers.SerializerMethodField()
     
     class Meta:
         model = Activity
         fields = [
             'id', 'name', 'description', 'email', 'website', 'logo',
-            'activity_type', 'start_date', 'end_date', 'location',
+            'activity_type', 'categories', 'start_date', 'end_date', 'location',
             'max_participants', 'registration_deadline', 'is_recurring',
             'is_active', 'is_approved', 'approved_by', 'approved_at',
-            'created_by', 'created_at', 'updated_at', 'participant_count', 'user_registration'
+            'created_by', 'created_at', 'updated_at', 
+            'members_count', 'followers_count', 'posts_count', 'events_count',
+            'user_registration'
         ]
         read_only_fields = ['id', 'is_approved', 'approved_by', 'approved_at', 'created_by', 'created_at', 'updated_at']
     

@@ -420,11 +420,10 @@ if %errorlevel% neq 0 (
         )
     )
 ) else (
-    echo [PASS]  All required dependencies are already installed.
+echo [PASS]  All required dependencies are already installed.
 )
 echo.
-echo [DEBUG] Step 4 reached end without closing.
-pause
+
 
 
 REM ================================================================================
@@ -454,8 +453,7 @@ echo [PASS]  Frontend installation attempted.
 
 :step5
 echo.
-echo [DEBUG] Frontend check complete.
-pause
+
 echo.
 ping -n 2 127.0.0.1 >nul
 
@@ -497,8 +495,7 @@ if exist "frontend\" (
     echo [PASS]  Frontend environment configured.
 )
 echo.
-echo [DEBUG] Step 5 complete.
-pause
+
 echo.
 
 if "%ENV_MODE%"=="prod" (
@@ -688,18 +685,40 @@ echo ===========================================================================
 echo.
 
 REM Ask if user wants to open browser
-set /p OPEN_BROWSER="Open platform in browser? (Y/N): "
-if /i "%OPEN_BROWSER%"=="Y" (
-    echo.
-    if exist "frontend\" (
-        echo [INFO]  Opening Frontend at http://localhost:5173...
-        start http://localhost:5173
+echo.
+echo [SELECT BROWSER ACTION]
+echo   1. Open Platform UI (React Frontend) - Recommended
+echo   2. Open API Root (Django)
+echo   3. Open Admin Panel
+echo   4. Skip
+echo.
+set /p BROWSER_CHOICE="Enter your choice (1-4) [1]: "
+if "%BROWSER_CHOICE%"=="" set BROWSER_CHOICE=1
+
+if "%BROWSER_CHOICE%"=="1" (
+    if exist "frontend" (
+        if "%ENV_MODE%"=="local" (
+            echo [INFO]  Opening Frontend at http://localhost:5173...
+            start "" "http://localhost:5173"
+        ) else (
+            echo [INFO]  Opening Frontend at http://!LAN_IP!:5173...
+            start "" "http://!LAN_IP!:5173"
+        )
     ) else (
-        echo [INFO]  Opening API at http://127.0.0.1:%DEFAULT_PORT%...
-        start http://127.0.0.1:%DEFAULT_PORT%
+        echo [WARN]  Frontend folder not found. Opening API instead...
+        start "" "http://127.0.0.1:%DEFAULT_PORT%"
     )
+) else if "%BROWSER_CHOICE%"=="2" (
+    start "" "http://127.0.0.1:%DEFAULT_PORT%/api/"
+) else if "%BROWSER_CHOICE%"=="3" (
+    start "" "http://127.0.0.1:%DEFAULT_PORT%/admin/"
+)
+
+if not "%BROWSER_CHOICE%"=="4" (
     ping -n 3 127.0.0.1 >nul
 )
+
+
 
 echo.
 echo ================================================================================

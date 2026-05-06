@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, AuthState, LoginCredentials, RegisterCredentials } from '@/types';
+import { AuthState, LoginCredentials, RegisterCredentials } from '@/types';
+
 import { authService } from '@/services/auth.service';
 import { queryClient } from '@/lib/react-query';
 

@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
+
 
 interface Props {
   children: ReactNode;
@@ -38,11 +39,12 @@ class ErrorBoundary extends Component<Props, State> {
             >
               Refresh Page
             </button>
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <pre className="mt-8 max-w-full overflow-auto rounded bg-gray-100 p-4 text-left text-xs text-red-500">
                 {this.state.error?.toString()}
               </pre>
             )}
+
           </div>
         )
       );

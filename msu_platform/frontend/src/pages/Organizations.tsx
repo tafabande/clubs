@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Sparkles } from 'lucide-react';
 import { Layout } from '@/components/layout';

@@ -1,5 +1,5 @@
 export const CONFIG = {
-  API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  API_URL: import.meta.env.VITE_API_URL || '/api',
   APP_NAME: 'MSU Platform',
   STORAGE_KEYS: {
     ACCESS_TOKEN: 'access_token',

@@ -127,4 +127,5 @@ export const isNetworkError = (error: unknown): boolean => {
   return false;
 };
 
+export const apiClient = api;
 export default api;

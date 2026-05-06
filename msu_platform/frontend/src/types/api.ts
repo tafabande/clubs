@@ -250,6 +250,7 @@ export interface ApiSuccess<T = unknown> {
 // ============================================================================
 
 export interface CreatePostRequest {
+  organization_type: OrganizationType | string;
   organization_id: number;
   content: string;
   media_files?: File[];

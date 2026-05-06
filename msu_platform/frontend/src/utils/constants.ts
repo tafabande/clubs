@@ -1,6 +1,6 @@
 // Application Constants
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 export const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '30000', 10);
 
 export const APP_NAME = import.meta.env.VITE_APP_NAME || 'MSU Platform';
@@ -52,6 +52,15 @@ export const API_ENDPOINTS = {
   // Search
   SEARCH: '/orgs/search/',
 
+  // ── RBAC Dashboard Endpoints ────────────────────────────────────
+  DASHBOARD_ROLE: '/dashboard/role/',
+  DASHBOARD_ADMIN: '/dashboard/admin/',
+  DASHBOARD_MODERATOR: '/dashboard/moderator/',
+  DASHBOARD_ORG_LEADER: '/dashboard/org-leader/',
+  DASHBOARD_USER: '/dashboard/user/',
+  ADMIN_ASSIGN_ROLE: '/dashboard/admin/assign-role/',
+  MOD_TOGGLE_POST: (postId: string) => `/dashboard/mod/toggle-post/${postId}/`,
+
 } as const;
 
 // Query Keys
@@ -66,6 +75,11 @@ export const QUERY_KEYS = {
   EVENT: 'event',
   USERS: 'users',
   USER: 'user',
+  DASHBOARD_ROLE: 'dashboard-role',
+  DASHBOARD_ADMIN: 'dashboard-admin',
+  DASHBOARD_MODERATOR: 'dashboard-moderator',
+  DASHBOARD_ORG_LEADER: 'dashboard-org-leader',
+  DASHBOARD_USER: 'dashboard-user',
 } as const;
 
 // Default Pagination

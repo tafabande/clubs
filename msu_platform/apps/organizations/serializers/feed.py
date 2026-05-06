@@ -105,6 +105,12 @@ class PostSerializer(serializers.ModelSerializer):
 class CreatePostSerializer(serializers.ModelSerializer):
     """Serializer for creating posts."""
 
+    organization_type = serializers.ChoiceField(
+        choices=['club', 'church', 'sportsteam', 'activity'],
+        write_only=True
+    )
+    organization_id = serializers.IntegerField(write_only=True)
+
     media_files = serializers.ListField(
         child=serializers.FileField(),
         write_only=True,
@@ -114,13 +120,30 @@ class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'content_type', 'object_id', 'post_type', 'title', 'content',
+            'organization_type', 'organization_id', 'post_type', 'title', 'content',
             'image', 'video', 'event_date', 'event_location', 'event_link',
             'visibility', 'tags', 'media_files'
         ]
 
     def create(self, validated_data):
         """Create post with media files."""
+        org_type_str = validated_data.pop('organization_type')
+        org_id = validated_data.pop('organization_id')
+        
+        from django.contrib.contenttypes.models import ContentType
+        from apps.organizations.models import Club, Church, SportsTeam, Activity
+        
+        model_map = {
+            'club': Club,
+            'church': Church,
+            'sportsteam': SportsTeam,
+            'activity': Activity
+        }
+        
+        ct = ContentType.objects.get_for_model(model_map[org_type_str])
+        validated_data['content_type'] = ct
+        validated_data['object_id'] = org_id
+
         media_files = validated_data.pop('media_files', [])
         post = Post.objects.create(**validated_data)
 

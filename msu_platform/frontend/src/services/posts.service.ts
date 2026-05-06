@@ -39,6 +39,7 @@ export const postsService = {
   async createPost(data: CreatePostRequest): Promise<Post> {
     const formData = new FormData();
 
+    formData.append('organization_type', data.organization_type);
     formData.append('organization_id', String(data.organization_id));
     formData.append('content', data.content);
 

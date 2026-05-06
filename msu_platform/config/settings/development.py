@@ -15,6 +15,7 @@ except ImportError:
 
 # Allow all hosts in development
 ALLOWED_HOSTS = ['*']
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Disable HTTPS redirect in development
 SECURE_SSL_REDIRECT = False

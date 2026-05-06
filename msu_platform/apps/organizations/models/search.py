@@ -37,15 +37,8 @@ class SearchIndex(models.Model):
     category = models.CharField(max_length=100, blank=True)
     tags = models.TextField(blank=True, help_text='Space-separated tags')
 
-    # Search vector for PostgreSQL full-text search
-    search_vector = models.GeneratedField(
-        expression=SearchVector('name', weight='A') +
-                   SearchVector('description', weight='B') +
-                   SearchVector('category', weight='C') +
-                   SearchVector('tags', weight='D'),
-        output_field=models.TextField(),
-        db_persist=True
-    )
+    # Search vector for PostgreSQL full-text search (disabled on SQLite)
+    search_vector = models.TextField(null=True, blank=True)
 
     # Metadata
     is_active = models.BooleanField(default=True)
@@ -57,7 +50,7 @@ class SearchIndex(models.Model):
     class Meta:
         db_table = 'search_index'
         indexes = [
-            GinIndex(fields=['search_vector'], name='search_vector_gin_idx'),
+            models.Index(fields=['search_vector'], name='search_vector_idx'),
             models.Index(fields=['organization_type', 'is_active'], name='search_type_active_idx'),
             models.Index(fields=['is_active', 'is_approved', '-member_count'], name='search_status_count_idx'),
             models.Index(fields=['category', '-member_count'], name='search_category_idx'),

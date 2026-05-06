@@ -16,8 +16,8 @@ class RLSMiddleware:
             if connection.vendor == 'postgresql':
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        "SET LOCAL app.current_user_id = %s",
-                        [request.user.id]
+                        "SELECT set_config('app.current_user_id', %s, true)",
+                        [str(request.user.id)]
                     )
 
         response = self.get_response(request)

@@ -62,6 +62,6 @@ class SportsTeamMembership(models.Model):
         db_table = 'sports_team_memberships'
         unique_together = ['user', 'sports_team']
         indexes = [
-            models.Index(fields=['sports_team', 'status'], name='sports_membership_team_status_idx'),
-            models.Index(fields=['user', 'status'], name='sports_membership_user_status_idx'),
+            models.Index(fields=['sports_team', 'status'], name='sports_mem_tm_stat_idx'),
+            models.Index(fields=['user', 'status'], name='sports_mem_usr_stat_idx'),
         ]

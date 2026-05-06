@@ -4,7 +4,7 @@ Serializers for organization models.
 from rest_framework import serializers
 from django.db.models import Count
 from apps.users.serializers import UserSerializer
-from .models import (
+from ..models import (
     Club, ClubMembership,
     Church, ChurchMembership,
     SportsTeam, SportsTeamMembership,

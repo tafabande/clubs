@@ -218,8 +218,8 @@ class SearchIndexAdmin(admin.ModelAdmin):
 @admin.register(PopularSearch)
 class PopularSearchAdmin(admin.ModelAdmin):
     """Admin for PopularSearch model."""
-    list_display = ['query', 'search_count', 'last_searched', 'created_at']
-    list_filter = ['last_searched', 'created_at']
+    list_display = ['query', 'search_count', 'last_searched']
+    list_filter = ['last_searched']
     search_fields = ['query']
-    readonly_fields = ['created_at', 'last_searched']
+    readonly_fields = ['last_searched']
     ordering = ['-search_count']

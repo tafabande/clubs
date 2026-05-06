@@ -62,7 +62,7 @@ class ClubMembership(models.Model):
         db_table = 'club_memberships'
         unique_together = ['user', 'club']
         indexes = [
-            models.Index(fields=['club', 'status'], name='club_membership_club_status_idx'),
-            models.Index(fields=['user', 'status'], name='club_membership_user_status_idx'),
-            models.Index(fields=['status', '-joined_at'], name='club_membership_status_joined_idx'),
+            models.Index(fields=['club', 'status'], name='club_mem_cl_stat_idx'),
+            models.Index(fields=['user', 'status'], name='club_mem_usr_stat_idx'),
+            models.Index(fields=['status', '-joined_at'], name='club_mem_stat_join_idx'),
         ]

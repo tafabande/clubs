@@ -245,15 +245,15 @@ class Migration(migrations.Migration):
         # ===== ClubMembership Indexes =====
         migrations.AddIndex(
             model_name='clubmembership',
-            index=models.Index(fields=['club', 'status'], name='club_membership_club_status_idx'),
+            index=models.Index(fields=['club', 'status'], name='club_mem_cl_stat_idx'),
         ),
         migrations.AddIndex(
             model_name='clubmembership',
-            index=models.Index(fields=['user', 'status'], name='club_membership_user_status_idx'),
+            index=models.Index(fields=['user', 'status'], name='club_mem_usr_stat_idx'),
         ),
         migrations.AddIndex(
             model_name='clubmembership',
-            index=models.Index(fields=['status', '-joined_at'], name='club_membership_status_joined_idx'),
+            index=models.Index(fields=['status', '-joined_at'], name='club_mem_stat_join_idx'),
         ),
 
         # ===== Church Indexes =====
@@ -277,11 +277,11 @@ class Migration(migrations.Migration):
         # ===== ChurchMembership Indexes =====
         migrations.AddIndex(
             model_name='churchmembership',
-            index=models.Index(fields=['church', 'status'], name='church_membership_church_status_idx'),
+            index=models.Index(fields=['church', 'status'], name='church_mem_ch_stat_idx'),
         ),
         migrations.AddIndex(
             model_name='churchmembership',
-            index=models.Index(fields=['user', 'status'], name='church_membership_user_status_idx'),
+            index=models.Index(fields=['user', 'status'], name='church_mem_usr_stat_idx'),
         ),
 
         # ===== SportsTeam Indexes =====
@@ -309,11 +309,11 @@ class Migration(migrations.Migration):
         # ===== SportsTeamMembership Indexes =====
         migrations.AddIndex(
             model_name='sportsteammembership',
-            index=models.Index(fields=['sports_team', 'status'], name='sports_membership_team_status_idx'),
+            index=models.Index(fields=['sports_team', 'status'], name='sports_mem_tm_stat_idx'),
         ),
         migrations.AddIndex(
             model_name='sportsteammembership',
-            index=models.Index(fields=['user', 'status'], name='sports_membership_user_status_idx'),
+            index=models.Index(fields=['user', 'status'], name='sports_mem_usr_stat_idx'),
         ),
 
         # ===== Activity Indexes =====
@@ -349,7 +349,7 @@ class Migration(migrations.Migration):
         # ===== ActivityRegistration Indexes =====
         migrations.AddIndex(
             model_name='activityregistration',
-            index=models.Index(fields=['activity', 'status'], name='activity_reg_activity_status_idx'),
+            index=models.Index(fields=['activity', 'status'], name='act_reg_act_stat_idx'),
         ),
         migrations.AddIndex(
             model_name='activityregistration',

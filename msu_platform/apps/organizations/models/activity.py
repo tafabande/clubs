@@ -59,7 +59,7 @@ class ActivityRegistration(models.Model):
         db_table = 'activity_registrations'
         unique_together = ['user', 'activity']
         indexes = [
-            models.Index(fields=['activity', 'status'], name='activity_reg_activity_status_idx'),
+            models.Index(fields=['activity', 'status'], name='act_reg_act_stat_idx'),
             models.Index(fields=['user', 'status'], name='activity_reg_user_status_idx'),
             models.Index(fields=['-registered_at'], name='activity_reg_registered_idx'),
         ]

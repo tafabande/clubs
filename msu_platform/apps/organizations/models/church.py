@@ -51,6 +51,6 @@ class ChurchMembership(models.Model):
         db_table = 'church_memberships'
         unique_together = ['user', 'church']
         indexes = [
-            models.Index(fields=['church', 'status'], name='church_membership_church_status_idx'),
-            models.Index(fields=['user', 'status'], name='church_membership_user_status_idx'),
+            models.Index(fields=['church', 'status'], name='church_mem_ch_stat_idx'),
+            models.Index(fields=['user', 'status'], name='church_mem_usr_stat_idx'),
         ]

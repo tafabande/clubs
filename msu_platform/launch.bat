@@ -485,9 +485,17 @@ echo SECRET_KEY=dev-secret-key-change-in-production>>.env
 echo DJANGO_SETTINGS_MODULE=config.settings.development>>.env
 echo ALLOWED_HOSTS=localhost,127.0.0.1,!LAN_IP!>>.env
 echo DATABASE_URL=sqlite:///db.sqlite3>>.env
+echo CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://!LAN_IP!:5173>>.env
+echo CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://!LAN_IP!:5173>>.env
+echo FRONTEND_URL=http://!LAN_IP!:5173>>.env
 echo [PASS]  Default environment file created.
 
 :step5_env_done
+if exist "frontend\" (
+    echo [INFO]  Configuring frontend environment...
+    echo VITE_API_URL=http://!LAN_IP!:%DEFAULT_PORT%/api>frontend/.env
+    echo [PASS]  Frontend environment configured.
+)
 echo.
 echo [DEBUG] Step 5 complete.
 pause
@@ -624,7 +632,11 @@ ping -n 2 127.0.0.1 >nul
 REM Start React frontend if it exists
 if exist "frontend\" (
     echo [INFO]  Starting React frontend...
-    start /B cmd /c "cd frontend && npm run dev" > frontend.log 2>&1
+    if "%ENV_MODE%"=="local" (
+        start /B cmd /c "cd frontend && npm run dev" > frontend.log 2>&1
+    ) else (
+        start /B cmd /c "cd frontend && npm run dev -- --host" > frontend.log 2>&1
+    )
     echo [PASS]  Frontend started in background
 )
 echo.
@@ -643,7 +655,9 @@ echo ===========================================================================
 echo.
 echo   Localhost (API):  http://127.0.0.1:%DEFAULT_PORT%
 echo   Localhost (UI):   http://localhost:5173
-echo   LAN Access:       http://%LAN_IP%:%DEFAULT_PORT%
+echo.
+echo   LAN Access (API): http://%LAN_IP%:%DEFAULT_PORT%
+echo   LAN Access (UI):  http://%LAN_IP%:5173
 echo.
 echo   Admin Panel:      http://127.0.0.1:%DEFAULT_PORT%/admin/
 echo   API Explorer:     http://127.0.0.1:%DEFAULT_PORT%/api/

@@ -10,7 +10,7 @@ Provides validation for:
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 from django.utils.deconstruct import deconstructible
-import magic
+import filetype
 import os
 
 # File size limits (in bytes)
@@ -98,7 +98,7 @@ class FileExtensionValidator:
 @deconstructible
 class MimeTypeValidator:
     """
-    Validator to check MIME type using python-magic.
+    Validator to check MIME type using filetype library.
 
     Usage:
         field = models.FileField(validators=[MimeTypeValidator(allowed_types=['image/jpeg', 'image/png'])])
@@ -110,9 +110,15 @@ class MimeTypeValidator:
 
     def __call__(self, value):
         try:
-            # Read file content to determine MIME type
-            mime = magic.from_buffer(value.read(1024), mime=True)
+            # Read file header to determine MIME type
+            kind = filetype.guess(value.read(2048))
             value.seek(0)  # Reset file pointer
+
+            if kind is None:
+                # If filetype can't guess, check if it's an image or document we know
+                mime = 'application/octet-stream'
+            else:
+                mime = kind.mime
 
             if mime not in self.allowed_types:
                 raise ValidationError(
@@ -120,6 +126,8 @@ class MimeTypeValidator:
                     code='invalid_mime_type',
                     params={'mime_type': mime, 'allowed': self.allowed_types}
                 )
+        except ValidationError:
+            raise
         except Exception as e:
             raise ValidationError(
                 'Could not determine file type',

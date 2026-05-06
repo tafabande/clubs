@@ -2,6 +2,7 @@
 
 import api from './api';
 import { API_ENDPOINTS } from '@/utils/constants';
+import { OrganizationType } from '@/types';
 import type {
   Organization,
   PaginatedResponse,
@@ -12,23 +13,74 @@ import type {
   Post,
 } from '@/types';
 
+/**
+ * Helper to get the correct endpoint for an organization type
+ */
+const getEndpointByType = (type?: OrganizationType | string) => {
+  switch (type) {
+    case OrganizationType.CLUB:
+    case 'club':
+    case 'clubs':
+      return API_ENDPOINTS.CLUBS;
+    case OrganizationType.CHURCH:
+    case 'church':
+    case 'churches':
+      return API_ENDPOINTS.CHURCHES;
+    case OrganizationType.SPORTS_TEAM:
+    case 'sports_team':
+    case 'sports-teams':
+      return API_ENDPOINTS.SPORTS_TEAMS;
+    case OrganizationType.ACTIVITY:
+    case 'activity':
+    case 'activities':
+      return API_ENDPOINTS.ACTIVITIES;
+    default:
+      return API_ENDPOINTS.CLUBS; // Default to clubs
+  }
+};
+
+/**
+ * Helper to get the pluralized type string for URLs
+ */
+const getPluralType = (type: OrganizationType | string): string => {
+  switch (type) {
+    case OrganizationType.CLUB: return 'clubs';
+    case OrganizationType.CHURCH: return 'churches';
+    case OrganizationType.SPORTS_TEAM: return 'sports-teams';
+    case OrganizationType.ACTIVITY: return 'activities';
+    default: return String(type).replace('_', '-');
+  }
+};
+
 export const organizationsService = {
   /**
    * Get all organizations with filters
    */
   async getOrganizations(filters?: OrganizationFilters): Promise<PaginatedResponse<Organization>> {
+    // If we have a search query, use the global search endpoint
+    if (filters?.search) {
+      const response = await api.get<PaginatedResponse<Organization>>(
+        API_ENDPOINTS.SEARCH,
+        { params: filters }
+      );
+      return response.data;
+    }
+
+    // Otherwise, fetch from the specific type endpoint if provided, or default to clubs
+    const endpoint = getEndpointByType(filters?.organization_type);
     const response = await api.get<PaginatedResponse<Organization>>(
-      API_ENDPOINTS.ORGANIZATIONS,
+      endpoint,
       { params: filters }
     );
     return response.data;
   },
 
   /**
-   * Get organization by ID
+   * Get organization by ID and type
    */
-  async getOrganization(id: number): Promise<Organization> {
-    const response = await api.get<Organization>(API_ENDPOINTS.ORGANIZATION_DETAIL(id));
+  async getOrganization(type: OrganizationType | string, id: number): Promise<Organization> {
+    const pluralType = getPluralType(type);
+    const response = await api.get<Organization>(API_ENDPOINTS.ORGANIZATION_DETAIL(pluralType, id));
     return response.data;
   },
 
@@ -53,8 +105,9 @@ export const organizationsService = {
       formData.append('cover_photo', data.cover_photo);
     }
 
+    const endpoint = getEndpointByType(data.organization_type);
     const response = await api.post<Organization>(
-      API_ENDPOINTS.ORGANIZATIONS,
+      endpoint,
       formData,
       {
         headers: {
@@ -70,10 +123,12 @@ export const organizationsService = {
    * Update organization
    */
   async updateOrganization(
+    type: OrganizationType | string,
     id: number,
     data: UpdateOrganizationRequest
   ): Promise<Organization> {
     const formData = new FormData();
+    const pluralType = getPluralType(type);
 
     // Add text fields
     Object.entries(data).forEach(([key, value]) => {
@@ -91,7 +146,7 @@ export const organizationsService = {
     }
 
     const response = await api.patch<Organization>(
-      API_ENDPOINTS.ORGANIZATION_DETAIL(id),
+      API_ENDPOINTS.ORGANIZATION_DETAIL(pluralType, id),
       formData,
       {
         headers: {
@@ -106,31 +161,35 @@ export const organizationsService = {
   /**
    * Delete organization
    */
-  async deleteOrganization(id: number): Promise<void> {
-    await api.delete(API_ENDPOINTS.ORGANIZATION_DETAIL(id));
+  async deleteOrganization(type: OrganizationType | string, id: number): Promise<void> {
+    const pluralType = getPluralType(type);
+    await api.delete(API_ENDPOINTS.ORGANIZATION_DETAIL(pluralType, id));
   },
 
   /**
    * Join organization
    */
-  async joinOrganization(id: number): Promise<Membership> {
-    const response = await api.post<Membership>(API_ENDPOINTS.ORGANIZATION_JOIN(id));
+  async joinOrganization(type: OrganizationType | string, id: number): Promise<Membership> {
+    const pluralType = getPluralType(type);
+    const response = await api.post<Membership>(API_ENDPOINTS.ORGANIZATION_JOIN(pluralType, id));
     return response.data;
   },
 
   /**
    * Leave organization
    */
-  async leaveOrganization(id: number): Promise<void> {
-    await api.post(API_ENDPOINTS.ORGANIZATION_LEAVE(id));
+  async leaveOrganization(type: OrganizationType | string, id: number): Promise<void> {
+    const pluralType = getPluralType(type);
+    await api.post(API_ENDPOINTS.ORGANIZATION_LEAVE(pluralType, id));
   },
 
   /**
    * Get organization members
    */
-  async getOrganizationMembers(id: number): Promise<PaginatedResponse<Membership>> {
+  async getOrganizationMembers(type: OrganizationType | string, id: number): Promise<PaginatedResponse<Membership>> {
+    const pluralType = getPluralType(type);
     const response = await api.get<PaginatedResponse<Membership>>(
-      API_ENDPOINTS.ORGANIZATION_MEMBERS(id)
+      API_ENDPOINTS.ORGANIZATION_MEMBERS(pluralType, id)
     );
     return response.data;
   },
@@ -138,20 +197,10 @@ export const organizationsService = {
   /**
    * Get organization posts
    */
-  async getOrganizationPosts(id: number): Promise<PaginatedResponse<Post>> {
+  async getOrganizationPosts(type: OrganizationType | string, id: number): Promise<PaginatedResponse<Post>> {
+    const pluralType = getPluralType(type);
     const response = await api.get<PaginatedResponse<Post>>(
-      API_ENDPOINTS.ORGANIZATION_POSTS(id)
-    );
-    return response.data;
-  },
-
-  /**
-   * Search organizations
-   */
-  async searchOrganizations(query: string): Promise<PaginatedResponse<Organization>> {
-    const response = await api.get<PaginatedResponse<Organization>>(
-      API_ENDPOINTS.ORGANIZATIONS,
-      { params: { search: query } }
+      API_ENDPOINTS.ORGANIZATION_POSTS(pluralType, id)
     );
     return response.data;
   },

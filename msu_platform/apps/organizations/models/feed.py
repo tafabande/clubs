@@ -8,6 +8,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from apps.users.models import User
+from apps.core.validators import validate_image_file, FileSizeValidator, MimeTypeValidator
 import uuid
 
 
@@ -64,9 +65,17 @@ class Post(models.Model):
     content = models.TextField(help_text='Post content/description')
 
     # Media
-    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)
-    video = models.FileField(upload_to='posts/videos/', blank=True, null=True)
-    video_thumbnail = models.ImageField(upload_to='posts/thumbnails/', blank=True, null=True, help_text='Auto-generated video thumbnail')
+    image = models.ImageField(upload_to='posts/images/', blank=True, null=True, validators=[validate_image_file])
+    video = models.FileField(
+        upload_to='posts/videos/', 
+        blank=True, 
+        null=True, 
+        validators=[
+            FileSizeValidator(max_size=100 * 1024 * 1024),  # 100MB for video
+            MimeTypeValidator(allowed_types=['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo'])
+        ]
+    )
+    video_thumbnail = models.ImageField(upload_to='posts/thumbnails/', blank=True, null=True, help_text='Auto-generated video thumbnail', validators=[validate_image_file])
 
     # Event details (if post_type is 'event')
     event_date = models.DateTimeField(null=True, blank=True, help_text='Event date and time')
@@ -138,7 +147,12 @@ class PostMedia(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='media')
 
     media_type = models.CharField(max_length=20, choices=MEDIA_TYPES)
-    file = models.FileField(upload_to='posts/media/')
+    file = models.FileField(
+        upload_to='posts/media/',
+        validators=[
+            FileSizeValidator(max_size=100 * 1024 * 1024),
+        ]
+    )
     caption = models.CharField(max_length=500, blank=True)
 
     # CDN & Processing fields

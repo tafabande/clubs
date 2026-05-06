@@ -8,6 +8,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken as JWT_RefreshToken
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 import secrets
 
 from .models import User, RefreshToken, UserSession, EmailVerificationToken, PasswordResetToken
@@ -59,6 +61,7 @@ def register(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@ratelimit(key='ip', rate='5/15m', method='POST', block=True)
 def login(request):
     """User login."""
     serializer = LoginSerializer(data=request.data, context={'request': request})
@@ -92,11 +95,29 @@ def login(request):
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
 
-        return Response({
-            'access': access_token,
-            'refresh': refresh_token,
+        response = Response({
             'user': UserSerializer(user).data
         }, status=status.HTTP_200_OK)
+
+        # Set cookies
+        response.set_cookie(
+            'access_token',
+            access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=15 * 60  # 15 minutes
+        )
+        response.set_cookie(
+            'refresh_token',
+            refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=7 * 24 * 60 * 60  # 7 days
+        )
+
+        return response
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -116,7 +137,11 @@ def logout(request):
         # Delete user session
         UserSession.objects.filter(user=request.user, ip_address=get_client_ip(request)).delete()
 
-        return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        response = Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+
+        return response
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -133,6 +158,7 @@ def logout_all(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+@ratelimit(key='ip', rate='10/h', method='GET', block=True)
 def verify_email(request, token):
     """Verify user email."""
     try:
@@ -154,6 +180,7 @@ def verify_email(request, token):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@ratelimit(key='ip', rate='3/h', method='POST', block=True)
 def password_reset_request(request):
     """Request password reset."""
     serializer = PasswordResetRequestSerializer(data=request.data)
@@ -218,3 +245,61 @@ def password_reset_confirm(request):
 def me(request):
     """Get current user information."""
     return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+
+
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+
+class CookieTokenRefreshView(TokenRefreshView):
+    """
+    Custom TokenRefreshView that reads refresh token from cookie
+    and sets new access token in cookie.
+    """
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if refresh_token:
+            # Inject refresh token into request data for the serializer
+            data = request.data.copy()
+            data['refresh'] = refresh_token
+            request._full_data = data # Internal hack for DRF request.data
+
+        try:
+            response = super().post(request, *args, **kwargs)
+        except (InvalidToken, TokenError) as e:
+            # Clear cookies on invalid token
+            response = Response({'detail': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+            response.delete_cookie('access_token')
+            response.delete_cookie('refresh_token')
+            return response
+
+        if response.status_code == 200:
+            access_token = response.data.get('access')
+            # If refresh token is rotated
+            new_refresh_token = response.data.get('refresh')
+
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                max_age=15 * 60
+            )
+
+            if new_refresh_token:
+                response.set_cookie(
+                    'refresh_token',
+                    new_refresh_token,
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite='Lax',
+                    max_age=7 * 24 * 60 * 60
+                )
+            
+            # Remove tokens from response body for security
+            if 'access' in response.data:
+                del response.data['access']
+            if 'refresh' in response.data:
+                del response.data['refresh']
+
+        return response

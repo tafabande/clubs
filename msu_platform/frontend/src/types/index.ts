@@ -33,7 +33,7 @@ export interface FormErrors {
 // UI State Types
 // ============================================================================
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'gold' | 'outline' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';

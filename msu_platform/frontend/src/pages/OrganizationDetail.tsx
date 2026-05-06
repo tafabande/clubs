@@ -9,25 +9,27 @@ import { PostCard } from '@/components/features';
 import { useOrganization, useOrganizationPosts, useJoinOrganization, useLeaveOrganization } from '@/hooks';
 
 const OrganizationDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { type, id } = useParams<{ type: string; id: string }>();
   const organizationId = parseInt(id || '0', 10);
+  const organizationType = type || 'club';
 
-  const { data: organization, isLoading, error } = useOrganization(organizationId);
-  const { data: postsData, isLoading: postsLoading } = useOrganizationPosts(organizationId);
+  const { data: organization, isLoading, error } = useOrganization(organizationType, organizationId);
+  const { data: postsData, isLoading: postsLoading } = useOrganizationPosts(organizationType, organizationId);
   const joinMutation = useJoinOrganization();
   const leaveMutation = useLeaveOrganization();
 
   const handleJoinLeave = async () => {
     try {
       if (organization?.is_member) {
-        await leaveMutation.mutateAsync(organizationId);
+        await leaveMutation.mutateAsync({ type: organizationType, id: organizationId });
       } else {
-        await joinMutation.mutateAsync(organizationId);
+        await joinMutation.mutateAsync({ type: organizationType, id: organizationId });
       }
     } catch (error) {
       console.error('Failed to join/leave organization:', error);
     }
   };
+
 
   if (isLoading) {
     return (

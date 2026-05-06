@@ -10,8 +10,18 @@
     --foreground: 222.2 84% 4.9%;
   }
 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-msu-gold selection:text-msu-blue;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .dark body {
+    @apply bg-msu-dark text-white;
   }
 }
 
@@ -21,51 +31,72 @@
   }
   
   .glass-dark {
-    @apply bg-black/50 backdrop-blur-md border border-white/10 shadow-xl;
+    @apply bg-black/40 backdrop-blur-lg border border-white/10 shadow-2xl;
   }
 
   .nav-link {
-    @apply text-slate-600 hover:text-blue-600 font-medium transition-colors;
+    @apply text-slate-600 hover:text-msu-blue font-medium transition-all hover:translate-y-[-1px] active:translate-y-[1px];
+  }
+
+  .dark .nav-link {
+    @apply text-slate-400 hover:text-msu-gold;
   }
 }
 
 .animate-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white font-bold py-3 px-8 rounded-xl transition-all 
-         hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20 
-         hover:shadow-blue-600/40 flex items-center justify-center gap-2;
+  @apply bg-msu-blue text-white font-bold py-3 px-8 rounded-2xl transition-all 
+         hover:scale-105 active:scale-95 shadow-lg shadow-msu-blue/20 
+         hover:shadow-msu-blue/40 flex items-center justify-center gap-2;
 }
 
-.btn-secondary {
-  @apply bg-white/10 text-slate-900 font-bold py-3 px-8 rounded-xl transition-all 
-         hover:bg-white/20 hover:scale-105 active:scale-95 border border-slate-200;
+.btn-gold {
+  @apply bg-msu-gold text-msu-blue font-bold py-3 px-8 rounded-2xl transition-all 
+         hover:scale-105 active:scale-95 shadow-lg shadow-msu-gold/20 
+         hover:shadow-msu-gold/40 flex items-center justify-center gap-2;
 }
 
-.card {
-  @apply glass p-6 transition-all hover:shadow-2xl hover:-translate-y-1;
+.card-3d {
+  transition: transform 0.2s ease-out;
+  transform-style: preserve-3d;
 }
 
-.input-field {
-  @apply bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none 
-         focus:ring-2 focus:ring-msu-gold/50 transition-all placeholder:text-white/30;
+.card-3d:hover {
+  transform: rotateX(5deg) rotateY(5deg);
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-msu-blue to-blue-500 font-black;
+}
+
+.dark .text-gradient {
+  @apply bg-gradient-to-r from-msu-gold to-yellow-300;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+.dark ::-webkit-scrollbar-track {
   @apply bg-msu-dark;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 border-2 border-transparent bg-clip-padding;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-white/20 hover:bg-white/30;
 }

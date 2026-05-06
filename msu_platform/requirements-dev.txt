@@ -1,0 +1,16 @@
+# Testing
+pytest
+pytest-django
+pytest-cov
+
+# Linting and Formatting
+flake8
+isort
+black
+bandit
+safety
+
+# Development Tools
+ipython
+django-debug-toolbar
+django-extensions

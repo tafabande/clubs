@@ -4,7 +4,7 @@ ViewSets for search functionality.
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q, F
 from django.db import connection
 from django.utils import timezone
@@ -33,7 +33,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = SearchIndexSerializer
-    permission_classes = [AllowAny]  # Search is public
+    permission_classes = [IsAuthenticated]  # Search is restricted to authenticated users
 
     def get_queryset(self):
         """Get search index entries (approved and active only)."""

@@ -231,11 +231,8 @@ echo [PASS]  Python %PYTHON_VERSION% detected
 echo.
 
 REM Check Python version (need 3.11+)
-for /f "tokens=1,2 delims=." %%a in ("%PYTHON_VERSION%") do (
-    set PYTHON_MAJOR=%%a
-    set PYTHON_MINOR=%%b
-)
-if %PYTHON_MINOR% LSS 11 (
+python -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"
+if %errorlevel% neq 0 (
     if "%ENV_MODE%"=="prod" (
         echo [FAIL]  Python 3.11+ is strictly REQUIRED for PROD mode ^(you have %PYTHON_VERSION%^)
         pause
@@ -479,7 +476,8 @@ if exist ".env.example" (
 
 echo [INFO]  Creating default .env file...
 echo DEBUG=True>.env
-echo SECRET_KEY=dev-secret-key-change-in-production>>.env
+echo SECRET_KEY=django-insecure-dev-secret-key-change-in-production>>.env
+echo JWT_SECRET_KEY=dev-jwt-secret-key-change-in-production>>.env
 echo DJANGO_SETTINGS_MODULE=config.settings.development>>.env
 echo ALLOWED_HOSTS=localhost,127.0.0.1,!LAN_IP!>>.env
 echo DATABASE_URL=sqlite:///db.sqlite3>>.env
@@ -489,6 +487,8 @@ echo FRONTEND_URL=http://!LAN_IP!:5173>>.env
 echo [PASS]  Default environment file created.
 
 :step5_env_done
+if not exist "static" mkdir static
+if not exist "media" mkdir media
 if exist "frontend\" (
     echo [INFO]  Configuring frontend environment...
     echo VITE_API_URL=http://!LAN_IP!:%DEFAULT_PORT%/api>frontend/.env
@@ -509,6 +509,12 @@ if "%ENV_MODE%"=="prod" (
     findstr /c:"dev-secret-key-change-in-production" .env >nul
     if !errorlevel! equ 0 (
         echo [FAIL]  PROD environment cannot use default SECRET_KEY. Please update .env
+        pause
+        goto :error_exit
+    )
+    findstr /c:"dev-jwt-secret-key-change-in-production" .env >nul
+    if !errorlevel! equ 0 (
+        echo [FAIL]  PROD environment cannot use default JWT_SECRET_KEY. Please update .env
         pause
         goto :error_exit
     )

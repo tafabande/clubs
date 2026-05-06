@@ -16,38 +16,42 @@ export const STORAGE_KEYS = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  // Auth
+  // Auth (Base path /api/auth/)
   LOGIN: '/auth/login/',
   REGISTER: '/auth/register/',
   LOGOUT: '/auth/logout/',
   REFRESH: '/auth/refresh/',
   ME: '/auth/me/',
 
-  // Organizations
-  ORGANIZATIONS: '/orgs/',
-  ORGANIZATION_DETAIL: (id: number) => `/orgs/${id}/`,
-  ORGANIZATION_JOIN: (id: number) => `/orgs/${id}/join/`,
-  ORGANIZATION_LEAVE: (id: number) => `/orgs/${id}/leave/`,
-  ORGANIZATION_MEMBERS: (id: number) => `/orgs/${id}/members/`,
-  ORGANIZATION_POSTS: (id: number) => `/orgs/${id}/posts/`,
+  // Organizations (Base path /api/orgs/)
+  CLUBS: '/orgs/clubs/',
+  CHURCHES: '/orgs/churches/',
+  SPORTS_TEAMS: '/orgs/sports-teams/',
+  ACTIVITIES: '/orgs/activities/',
+  
+  // Dynamic detail routes
+  ORGANIZATION_DETAIL: (type: string, id: number) => `/orgs/${type}/${id}/`,
+  ORGANIZATION_JOIN: (type: string, id: number) => `/orgs/${type}/${id}/join/`,
+  ORGANIZATION_LEAVE: (type: string, id: number) => `/orgs/${type}/${id}/leave/`,
+  ORGANIZATION_MEMBERS: (type: string, id: number) => `/orgs/${type}/${id}/members/`,
 
-  // Posts
-  POSTS: '/posts/',
-  POST_DETAIL: (id: number) => `/posts/${id}/`,
-  POST_LIKE: (id: number) => `/posts/${id}/like/`,
-  POST_UNLIKE: (id: number) => `/posts/${id}/unlike/`,
-  POST_COMMENTS: (id: number) => `/posts/${id}/comments/`,
+  // Posts & Feed (Base path /api/orgs/)
+  POSTS: '/orgs/posts/',
+  FEED: '/orgs/feed/',
+  POST_DETAIL: (id: number) => `/orgs/posts/${id}/`,
+  POST_LIKE: (id: number) => `/orgs/posts/${id}/like/`,
+  POST_UNLIKE: (id: number) => `/orgs/posts/${id}/unlike/`,
+  POST_COMMENTS: (id: number) => `/orgs/posts/${id}/comments/`,
 
-  // Events
-  EVENTS: '/events/',
-  EVENT_DETAIL: (id: number) => `/events/${id}/`,
-  EVENT_REGISTER: (id: number) => `/events/${id}/register/`,
-  EVENT_UNREGISTER: (id: number) => `/events/${id}/unregister/`,
+  // Activities / Events (Base path /api/orgs/activities/)
+  EVENTS: '/orgs/activities/',
+  EVENT_DETAIL: (id: number) => `/orgs/activities/${id}/`,
+  EVENT_REGISTER: (id: number) => `/orgs/activities/${id}/register/`,
+  EVENT_UNREGISTER: (id: number) => `/orgs/activities/${id}/cancel/`,
 
-  // Users
-  USERS: '/users/',
-  USER_DETAIL: (id: number) => `/users/${id}/`,
-  USER_PROFILE: (id: number) => `/users/${id}/profile/`,
+  // Search
+  SEARCH: '/orgs/search/',
+
 } as const;
 
 // Query Keys

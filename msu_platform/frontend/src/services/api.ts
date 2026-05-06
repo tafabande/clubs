@@ -8,20 +8,15 @@ import type { ApiError } from '@/types';
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - Add auth token to requests (handled by cookies now)
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
     return config;
   },
   (error: AxiosError) => {
@@ -40,30 +35,13 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        // Try to refresh the token - refresh endpoint will read refresh_token from cookie
+        await axios.post(`${API_BASE_URL}/auth/refresh/`, {}, { withCredentials: true });
 
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
-        // Try to refresh the token
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
-          refresh: refreshToken,
-        });
-
-        const { access } = response.data;
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access);
-
-        // Retry the original request with new token
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${access}`;
-        }
-
+        // Retry the original request (it will now send the new access_token cookie)
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - Clear tokens and redirect to login
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        // Refresh failed - Clear user data from localStorage and redirect
         localStorage.removeItem(STORAGE_KEYS.USER);
 
         // Redirect to login

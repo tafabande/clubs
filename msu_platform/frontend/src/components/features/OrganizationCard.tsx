@@ -1,8 +1,5 @@
-// Organization Card Component
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Users, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Calendar, ArrowUpRight } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
 import type { Organization, OrganizationType } from '@/types';
 
@@ -28,70 +25,80 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/organizations/${organization.id}`);
+    navigate(`/organizations/${organization.organization_type}/${organization.id}`);
   };
 
   return (
-    <Card hover onClick={handleClick}>
-      {/* Cover Photo */}
-      {organization.cover_photo && (
-        <div className="h-32 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl">
-          <img
-            src={organization.cover_photo}
-            alt={organization.name}
-            className="w-full h-full object-cover"
-          />
+    <motion.div
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+      className="h-full"
+    >
+      <div 
+        onClick={handleClick}
+        className="glass dark:glass-dark p-6 rounded-3xl h-full cursor-pointer group relative overflow-hidden transition-all duration-300 border border-transparent hover:border-msu-gold/30 shadow-lg hover:shadow-2xl"
+      >
+        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ArrowUpRight className="text-msu-gold" size={20} />
         </div>
-      )}
 
-      {/* Header */}
-      <div className="flex items-start gap-4 mb-4">
-        {organization.logo ? (
-          <img
-            src={organization.logo}
-            alt={organization.name}
-            className="w-16 h-16 rounded-xl object-cover border-2 border-white/20"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center border-2 border-white/20">
-            <span className="text-2xl font-bold text-msu-gold">
-              {organization.name.charAt(0)}
-            </span>
+        {/* Cover Photo */}
+        {organization.cover_photo && (
+          <div className="h-32 -mx-6 -mt-6 mb-6 overflow-hidden">
+            <img
+              src={organization.cover_photo}
+              alt={organization.name}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-msu-blue/40 to-transparent pointer-events-none" />
           </div>
         )}
 
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-bold mb-1 truncate">{organization.name}</h3>
-          <Badge variant={typeColors[organization.organization_type] as any}>
-            {typeLabels[organization.organization_type]}
-          </Badge>
+        {/* Header */}
+        <div className="flex items-start gap-5 mb-5 relative z-10">
+          {organization.logo ? (
+            <img
+              src={organization.logo}
+              alt={organization.name}
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 shadow-xl group-hover:rotate-6 transition-transform"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-msu-gold/20 flex items-center justify-center border-2 border-msu-gold/20 shadow-xl group-hover:rotate-6 transition-transform">
+              <span className="text-2xl font-black text-msu-gold uppercase">
+                {organization.name.charAt(0)}
+              </span>
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-black mb-1 truncate text-slate-900 dark:text-white group-hover:text-msu-blue dark:group-hover:text-msu-gold transition-colors">{organization.name}</h3>
+            <div className="flex gap-2">
+              <Badge variant={typeColors[organization.organization_type] as any}>
+                {typeLabels[organization.organization_type]}
+              </Badge>
+              {organization.is_member && <Badge variant="success">Member</Badge>}
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-slate-500 dark:text-white/60 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">
+          {organization.description}
+        </p>
+
+        {/* Stats */}
+        <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/30">
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-msu-gold" />
+            <span>{organization.members_count} members</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={14} className="text-msu-blue" />
+            <span>{organization.posts_count} posts</span>
+          </div>
         </div>
       </div>
-
-      {/* Description */}
-      <p className="text-white/60 text-sm mb-4 line-clamp-2">
-        {organization.description}
-      </p>
-
-      {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-white/40">
-        <div className="flex items-center gap-1">
-          <Users size={16} />
-          <span>{organization.members_count} members</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Calendar size={16} />
-          <span>{organization.posts_count} posts</span>
-        </div>
-      </div>
-
-      {/* Member Badge */}
-      {organization.is_member && (
-        <div className="mt-4 pt-4 border-t border-white/10">
-          <Badge variant="success">Member</Badge>
-        </div>
-      )}
-    </Card>
+    </motion.div>
   );
 };
 

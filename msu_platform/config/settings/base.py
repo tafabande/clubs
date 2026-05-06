@@ -37,9 +37,9 @@ INSTALLED_APPS = [
     # Local apps
     'apps.core',
     'apps.users',
-    'apps.permissions',
     'apps.organizations',
     'apps.audit',
+    'apps.permissions',
     'apps.api',
     'apps.media',
 ]
@@ -61,8 +61,12 @@ MIDDLEWARE = [
     'django.middleware.cache.FetchFromCacheMiddleware',  # Cache middleware (must be last)
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.audit.middleware.AuditLoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Security Middleware
+    'csp.middleware.CSPMiddleware',
+    # Custom Middleware
     'apps.core.middleware.RLSMiddleware',
     'apps.core.middleware.cache.APICacheMiddleware',  # Custom API cache middleware
     'apps.core.middleware.error_logging.ErrorLoggingMiddleware',  # Error logging
@@ -134,6 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'apps.core.authentication.CookieJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -173,9 +178,20 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Settings
-CSRF_COOKIE_HTTPONLY = False  # Allow React to read
+CSRF_COOKIE_HTTPONLY = True  # Enhanced security
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG # Set to True in production
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+
+# Content Security Policy (CSP)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'") # Note: unsafe-eval is often needed for React dev
+CSP_IMG_SRC = ("'self'", "data:", "https:", "http:")
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
+CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "http://localhost:5173", "http://localhost:3000")
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_REPORT_ONLY = DEBUG # Use report-only in development
 
 # Email Configuration
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

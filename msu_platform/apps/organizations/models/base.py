@@ -6,6 +6,8 @@ from apps.users.models import User
 import uuid
 
 
+from apps.core.validators import validate_image_file
+
 class BaseOrganization(models.Model):
     """Abstract base model for all organization types."""
 
@@ -14,7 +16,7 @@ class BaseOrganization(models.Model):
     description = models.TextField(blank=True)
     email = models.EmailField()
     website = models.URLField(blank=True)
-    logo = models.ImageField(upload_to='organization_logos/', blank=True, null=True)
+    logo = models.ImageField(upload_to='organization_logos/', blank=True, null=True, validators=[validate_image_file])
 
     is_active = models.BooleanField(default=True)
     is_approved = models.BooleanField(default=False)

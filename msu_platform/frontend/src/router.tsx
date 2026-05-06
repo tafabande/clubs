@@ -39,9 +39,10 @@ export const router = createBrowserRouter([
     element: <OrganizationsPage />,
   },
   {
-    path: '/organizations/:id',
+    path: '/organizations/:type/:id',
     element: <OrganizationDetailPage />,
   },
+
   {
     path: '/profile',
     element: (

@@ -13,7 +13,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
     path('logout-all/', views.logout_all, name='logout-all'),
-    path('refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    path('refresh/', views.CookieTokenRefreshView.as_view(), name='token-refresh'),
 
     # Email verification
     path('verify-email/<str:token>/', views.verify_email, name='verify-email'),

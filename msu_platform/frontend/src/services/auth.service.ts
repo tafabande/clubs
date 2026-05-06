@@ -18,9 +18,7 @@ export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.LOGIN, credentials);
 
-    // Store tokens and user data
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refresh);
+    // Store user data (tokens are in httpOnly cookies)
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
 
     return response.data;
@@ -32,9 +30,7 @@ export const authService = {
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.REGISTER, userData);
 
-    // Store tokens and user data
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refresh);
+    // Store user data (tokens are in httpOnly cookies)
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
 
     return response.data;
@@ -51,9 +47,7 @@ export const authService = {
       // Continue with local logout even if API call fails
       console.error('Logout API call failed:', error);
     } finally {
-      // Clear local storage
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      // Clear local user storage
       localStorage.removeItem(STORAGE_KEYS.USER);
     }
   },
@@ -61,20 +55,9 @@ export const authService = {
   /**
    * Refresh access token
    */
-  async refreshToken(): Promise<string> {
-    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    const request: TokenRefreshRequest = { refresh: refreshToken };
-    const response = await api.post<TokenRefreshResponse>(API_ENDPOINTS.REFRESH, request);
-
-    // Update access token
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access);
-
-    return response.data.access;
+  async refreshToken(): Promise<void> {
+    // refresh endpoint will read refresh_token from cookie
+    await api.post(API_ENDPOINTS.REFRESH, {});
   },
 
   /**
@@ -111,22 +94,19 @@ export const authService = {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    return !!token;
+    const user = localStorage.getItem(STORAGE_KEYS.USER);
+    return !!user;
   },
 
   /**
-   * Get access token
+   * Get tokens (obsolete with httpOnly cookies)
    */
   getAccessToken(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    return null;
   },
 
-  /**
-   * Get refresh token
-   */
   getRefreshToken(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    return null;
   },
 };
 

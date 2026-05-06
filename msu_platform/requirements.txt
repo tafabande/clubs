@@ -1,25 +1,36 @@
 # Django Core
-Django
-django-environ
+Django==5.2.8
+django-environ==0.13.0
 
 # REST Framework
-djangorestframework
-djangorestframework-simplejwt
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
 
 # Database
-psycopg2-binary; sys_platform != "win32"
+psycopg2-binary==2.9.11; sys_platform != "win32"
 
 # Security
-django-cors-headers
-django-ratelimit
-argon2-cffi
+django-cors-headers==4.9.0
+django-ratelimit==4.1.0
+django-csp==3.7
+argon2-cffi==25.1.0
 
 # Production Server
-gunicorn; sys_platform != "win32"
-whitenoise
+gunicorn==26.0.0; sys_platform != "win32"
+whitenoise==6.12.0
 
 # Utilities
-python-decouple
-Pillow
-python-magic; sys_platform != "win32"  # For MIME type detection
-python-magic-bin; sys_platform == "win32"
+python-decouple==3.8
+Pillow==12.0.0
+python-magic==0.4.27; sys_platform != "win32"  # For MIME type detection
+python-magic-bin==0.4.14; sys_platform == "win32"
+
+# Redis & Celery
+django-redis>=5.4.0
+celery==5.6.0
+django-celery-beat>=2.7.0
+
+# Monitoring & Health
+sentry-sdk>=2.22.0
+requests==2.31.0
+filetype==1.2.0

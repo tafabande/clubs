@@ -47,7 +47,7 @@ class ClubViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ['list', 'retrieve']:
-            permission_classes = [AllowAny]
+            permission_classes = [IsAuthenticated]
         elif self.action in ['update', 'partial_update', 'destroy']:
             permission_classes = [IsAuthenticated, IsOrganizationAdmin]
         else:
